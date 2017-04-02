@@ -141,4 +141,6 @@ void	VHTOnAssocRsp(_adapter *padapter);
 u8	rtw_vht_mcsmap_to_nss(u8 *pvht_mcs_map);
 void rtw_vht_nss_to_mcsmap(u8 nss, u8 *target_mcs_map, u8 *cur_mcs_map);
 
+extern const u16 VHT_MCS_DATA_RATE[3][2][30];
+
 #endif /* _RTW_VHT_H_ */
