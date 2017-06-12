@@ -760,13 +760,13 @@ check_bss:
 				roam_info.channel = notify_channel;
 				roam_info.bssid = cur_network->network.MacAddress;
 				roam_info.req_ie =
-					pmlmepriv->assoc_req+sizeof(struct rtw_ieee80211_hdr_3addr) + 2;
+					pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2;
 				roam_info.req_ie_len =
-					pmlmepriv->assoc_req_len+sizeof(struct rtw_ieee80211_hdr_3addr) - 2;
+					pmlmepriv->assoc_req_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 2;
 				roam_info.resp_ie =
-					pmlmepriv->assoc_rsp+sizeof(struct rtw_ieee80211_hdr_3addr) + 6;
+					pmlmepriv->assoc_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6;
 				roam_info.resp_ie_len =
-					pmlmepriv->assoc_rsp_len+sizeof(struct rtw_ieee80211_hdr_3addr) - 6;
+					pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6;
 				cfg80211_roamed(padapter->pnetdev, &roam_info, GFP_ATOMIC);
 		#else
 		cfg80211_roamed(padapter->pnetdev
