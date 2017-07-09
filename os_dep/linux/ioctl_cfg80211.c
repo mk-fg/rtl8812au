@@ -1903,7 +1903,7 @@ void rtw_cfg80211_indicate_scan_done(_adapter *adapter, bool aborted)
 			memset(&info, 0, sizeof(info));
 			info.aborted = aborted;
 			cfg80211_scan_done(pwdev_priv->scan_request, &info);
-#else // (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))             
+#else // (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
 			cfg80211_scan_done(pwdev_priv->scan_request, aborted);
 #endif
         }
@@ -3656,7 +3656,13 @@ static int rtw_cfg80211_add_monitor_if(_adapter *padapter, char *name, struct ne
 	mon_ndev->type = ARPHRD_IEEE80211_RADIOTAP;
 	strncpy(mon_ndev->name, name, IFNAMSIZ);
 	mon_ndev->name[IFNAMSIZ - 1] = 0;
+
+#if (LINUX_VERSION_CODE>=KERNEL_VERSION(4,11,9))
+	mon_ndev->needs_free_netdev = false;
+	mon_ndev->priv_destructor = rtw_ndev_destructor;
+#else
 	mon_ndev->destructor = rtw_ndev_destructor;
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
 	mon_ndev->netdev_ops = &rtw_cfg80211_monitor_if_ops;
@@ -3722,7 +3728,7 @@ static int
 		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0))
 		unsigned char name_assign_type,
 		#endif
-		enum nl80211_iftype type, 
+		enum nl80211_iftype type,
 		#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 		u32 *flags,
 		#endif
@@ -4302,13 +4308,13 @@ static int cfg80211_rtw_get_channel(struct wiphy *wiphy, struct wireless_dev *wd
 	int band;
 	int bandWidth;
 	int offset;
-  
+
 	struct dvobj_priv *dvobj;
 	struct net_device *ndev = wdev->netdev;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 	if (!ndev)
   		return -ENODEV;
-  
+
   	offset = rtw_get_oper_choffset(padapter);
   	channel = adapter_to_dvobj(padapter)->oper_channel;
 
@@ -4393,8 +4399,8 @@ static int cfg80211_rtw_get_channel(struct wiphy *wiphy, struct wireless_dev *wd
 		}
 		chandef->width = width;
 		chandef->center_freq1 = center_freq;
-		chandef->center_freq2 = center_freq2;  
-		RTW_INFO("%s : channel %d width %d freq1 %d freq2 %d center_freq %d offset %d\n", __func__, 
+		chandef->center_freq2 = center_freq2;
+		RTW_INFO("%s : channel %d width %d freq1 %d freq2 %d center_freq %d offset %d\n", __func__,
 			channel, width, chandef->center_freq1, chandef->center_freq2, chandef->chan->center_freq,
 			rtw_get_oper_choffset(padapter)
 		);
@@ -5179,7 +5185,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, const u8 *buf, si
 
 			if (check_fwstate(&padapter->mlmepriv, _FW_LINKED))
 				ext_listen_period = 500;/*500ms*/
-#ifdef CONFIG_P2P				
+#ifdef CONFIG_P2P
 			else
 				ext_listen_period = pwdinfo->ext_listen_period;
 
@@ -6193,7 +6199,7 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 
 	vht_cap->vht_supported = _TRUE;
 	rtw_vht_use_default_setting(padapter);
-	
+
 	/* Reference: core/rtw_vht.c */
 	/* MCS map */
 	vht_cap->vht_mcs.tx_mcs_map = pvhtpriv->vht_mcs_map[0] | (pvhtpriv->vht_mcs_map[1] << 8);
@@ -6218,7 +6224,7 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 		else
 			vht_cap->cap |= IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160MHZ;
 	}
-	
+
 	/* B4 Rx LDPC */
 	if(TEST_FLAG(pvhtpriv->ldpc_cap, LDPC_VHT_ENABLE_RX)) {
 		vht_cap->cap |= IEEE80211_VHT_CAP_RXLDPC;
@@ -6235,21 +6241,21 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 	if(TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_TX)) {
 		vht_cap->cap |= IEEE80211_VHT_CAP_TXSTBC;
 	}
-	
+
 	/* B8 B9 B10 Rx STBC */
 	if(TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_RX)) {
 		rtw_hal_get_def_var(padapter, HAL_DEF_RX_STBC, (u8 *)(&rx_stbc_nss));
 
 		if (rx_stbc_nss == 1)
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_1;
-		else if (rx_stbc_nss == 2) 
+		else if (rx_stbc_nss == 2)
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_2;
-		else if (rx_stbc_nss == 3) 
+		else if (rx_stbc_nss == 3)
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_3;
 	}
-	
+
 	/* B11 SU Beamformer Capable */
-	if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_BEAMFORMER_ENABLE)) {		
+	if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_BEAMFORMER_ENABLE)) {
 		vht_cap->cap |= IEEE80211_VHT_CAP_SU_BEAMFORMER_CAPABLE;
 		/* B16 17 18 Number of Sounding Dimensions */
 		rtw_hal_get_def_var(padapter, HAL_DEF_BEAMFORMER_CAP, (u8 *)&rf_num);
@@ -6293,7 +6299,7 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 
 
 	vht_cap->vht_mcs.tx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.
-	vht_cap->vht_mcs.rx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.	
+	vht_cap->vht_mcs.rx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.
 }
 
 void rtw_cfg80211_init_wiphy(_adapter *padapter)
