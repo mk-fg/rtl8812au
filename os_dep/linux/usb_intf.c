@@ -167,6 +167,7 @@ static struct usb_device_id rtw_usb_id_tbl[] = {
 	{USB_DEVICE(0x13b1, 0x003f), .driver_info = RTL8812}, /* Linksys - WUSB6300 */
 	{USB_DEVICE(0x2357, 0x0101), .driver_info = RTL8812}, /* TP-Link - Archer T4U */
 	{USB_DEVICE(0x2357, 0x0103), .driver_info = RTL8812}, /* TP-Link - T4UH */
+	{USB_DEVICE(0x2357, 0x010e), .driver_info = RTL8812}, /* TP-Link - T4UH */
 	{USB_DEVICE(0x20f4, 0x805b), .driver_info = RTL8812}, /* TRENDnet - */
 	{USB_DEVICE(0x0411, 0x025d), .driver_info = RTL8812}, /* Buffalo - WI-U3-866D */
 	{USB_DEVICE(0x050D, 0x1109), .driver_info = RTL8812}, /* Belkin F9L1109 - SerComm */
