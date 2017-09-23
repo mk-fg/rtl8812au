@@ -1,5 +1,9 @@
 # rtl8812au
 
+**WARNING: DO NOT USE THIS FORK, USE gordboy/rtl8812au INSTEAD**
+
+See old-5.1.5 branch for previous version (one that was here earlier) of this driver.
+
 ## Realtek 8812AU driver version 5.2.9
 
 Works fine with Ubuntu 17.04 Zesty 4.10 kernel. Also now tested and working fine on 4.11, 4.12 and 4.13-rc1, after recent commits.
@@ -27,7 +31,7 @@ To use dkms install:
 ```sh
 $ sudo dkms add -m rtl8812au -v 5.2.9
 $ sudo dkms build -m rtl8812au -v 5.2.9
-$ sudo dkms install -m rtl8812au -v 5.2.9 
+$ sudo dkms install -m rtl8812au -v 5.2.9
 ```
 
 To use dkms uninstall and remove:
