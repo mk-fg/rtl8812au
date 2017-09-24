@@ -88,7 +88,7 @@
 
 /* #define CONFIG_DRVEXT_MODULE	1 */
 
-#define CONFIG_DFS	1
+#define CONFIG_DFS 0
 
  /* #define CONFIG_SUPPORT_USB_INT */
  #ifdef CONFIG_SUPPORT_USB_INT
