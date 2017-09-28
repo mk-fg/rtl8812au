@@ -57,6 +57,10 @@ const char *const _pg_txpwr_src_str[] = {
 #define DBG_PG_TXPWR_READ 0
 #endif
 
+#ifndef DBG_TX_POWER_IDX
+#define DBG_TX_POWER_IDX 0
+#endif
+
 void dump_pg_txpwr_info_2g(void *sel, TxPowerInfo24G *txpwr_info, u8 rfpath_num, u8 max_tx_cnt)
 {
 	int path, group, tx_idx;
@@ -1362,6 +1366,10 @@ phy_SetTxPowerByRateBase(
 			, RateSection, (Band == BAND_ON_2_4G) ? "2.4" : "5", RfPath, TxNum);
 		return;
 	}
+
+	if (DBG_TX_POWER_IDX)
+		RTW_INFO( "TXPWR: by-rate-base [%c] RateSection:%d in %sG, TxNum:%d = %d\n",
+			rf_path_char(RfPath), RateSection, (Band == BAND_ON_2_4G) ? "2.4" : "5", TxNum, Value );
 
 	if (Band == BAND_ON_2_4G)
 		pHalData->TxPwrByRateBase2_4G[RfPath][TxNum][RateSection] = Value;
@@ -2720,6 +2728,11 @@ PHY_SetTxPowerByRate(
 		return;
 	}
 
+	if (DBG_TX_POWER_IDX)
+		RTW_INFO( "TXPWR: by-rate [%c] %sG %s TxNum:%d = %d\n",
+			rf_path_char(RFPath), (Band == BAND_ON_2_4G) ? "2.4" : "5",
+			MGN_RATE_STR(rateIndex), TxNum, Value );
+
 	pHalData->TxPwrByRateOffset[Band][RFPath][TxNum][rateIndex] = Value;
 }
 
@@ -2757,10 +2770,6 @@ phy_set_tx_power_level_by_path(
 		}
 	}
 }
-
-#ifndef DBG_TX_POWER_IDX
-#define DBG_TX_POWER_IDX 0
-#endif
 
 VOID
 PHY_SetTxPowerIndexByRateArray(
@@ -3626,6 +3635,10 @@ PHY_SetTxPowerIndex(
 	IN	u8				Rate
 )
 {
+	/* if (DBG_TX_POWER_IDX) */
+	/* 	RTW_INFO( "TXPWR: set-index [%c] %s pwr_idx:%u\n", */
+	/* 		rf_path_char(RFPath), MGN_RATE_STR(Rate), PowerIndex ); */
+
 	if (IS_HARDWARE_TYPE_8814A(pAdapter)) {
 #if (RTL8814A_SUPPORT == 1)
 		PHY_SetTxPowerIndex_8814A(pAdapter, PowerIndex, RFPath, Rate);
