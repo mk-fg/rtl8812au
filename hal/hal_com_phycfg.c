@@ -4203,10 +4203,12 @@ int rtw_get_phy_file_path(_adapter *adapter, const char *file_name)
 		len += snprintf(rtw_phy_para_file_path + len, PATH_LENGTH_MAX - len, "%s/", hal_spec->ic_name);
 		#endif
 		len += snprintf(rtw_phy_para_file_path + len, PATH_LENGTH_MAX - len, "%s", file_name);
+		RTW_INFO("rtw_get_phy_file_path: '%s' -> '%s'\n", file_name, rtw_phy_para_file_path);
 
 		return _TRUE;
 	}
 #endif
+	RTW_INFO("rtw_get_phy_file_path: '%s' - disabled\n", file_name);
 	return _FALSE;
 }
 
