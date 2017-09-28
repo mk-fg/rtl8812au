@@ -309,8 +309,8 @@ static const struct map_t rtl8821a_pg_txpwr_def_info =
 static const struct map_t rtl8821c_pg_txpwr_def_info =
 	MAP_ENT(0xB8, 1, 0xFF
 		, MAPSEG_ARRAY_ENT(0x10, 54,
-			0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x02, 0xFF, 0xFF, 0xFF, 0xFF, 
-			0xFF, 0xFF, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 
+			0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x02, 0xFF, 0xFF, 0xFF, 0xFF,
+			0xFF, 0xFF, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28, 0x28,
 			0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xEC, 0xFF, 0xFF, 0xFF, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D,
 			0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x02)
 	);
@@ -696,7 +696,7 @@ u16 hal_load_pg_txpwr_info_path_2g(
 		rtw_warn_on(1);
 	}
 
-exit:	
+exit:
 	return offset;
 }
 
@@ -724,7 +724,7 @@ u16 hal_load_pg_txpwr_info_path_5g(
 		offset += PG_TXPWR_1PATH_BYTE_NUM_5G;
 		goto exit;
 	}
-	
+
 #ifdef CONFIG_IEEE80211_BAND_5GHZ
 	if (DBG_PG_TXPWR_READ)
 		RTW_INFO("%s[%c] eaddr:0x%03x\n", __func__, rf_path_char(path), offset);
@@ -787,7 +787,7 @@ u16 hal_load_pg_txpwr_info_path_5g(
 			}
 			offset++;
 		}
-	}	
+	}
 
 	/* OFDM diff 2T ~ 3T */
 	if (HAL_SPEC_CHK_RF_PATH_5G(hal_spec, path) && HAL_SPEC_CHK_TX_CNT(hal_spec, 1)) {
@@ -3578,9 +3578,8 @@ phy_set_tx_power_limit(
 		if (powerLimit < prevPowerLimit)
 			pHalData->TxPwrLimit_2_4G[regulation][bandwidth][rateSection][channelIndex][RF_PATH_A] = powerLimit;
 
-		if (0)
-			RTW_INFO("2.4G Band value : [regulation %d][bw %d][rate_section %d][chnl %d][val %d]\n"
-				, regulation, bandwidth, rateSection, channelIndex, pHalData->TxPwrLimit_2_4G[regulation][bandwidth][rateSection][channelIndex][ODM_RF_PATH_A]);
+		RTW_INFO("2.4G Band value : [regulation %d][bw %d][rate_section %d][chnl %d][val %d]\n"
+			, regulation, bandwidth, rateSection, channelIndex, pHalData->TxPwrLimit_2_4G[regulation][bandwidth][rateSection][channelIndex][ODM_RF_PATH_A]);
 	} else if (eqNByte(Band, (u8 *)("5G"), 2)) {
 
 		channelIndex = phy_GetChannelIndexOfTxPowerLimit(BAND_ON_5G, channel);
@@ -3599,9 +3598,8 @@ phy_set_tx_power_limit(
 		if (powerLimit < prevPowerLimit)
 			pHalData->TxPwrLimit_5G[regulation][bandwidth][rateSection][channelIndex][RF_PATH_A] = powerLimit;
 
-		if (0)
-			RTW_INFO("5G Band value : [regulation %d][bw %d][rate_section %d][chnl %d][val %d]\n"
-				, regulation, bandwidth, rateSection, channel, pHalData->TxPwrLimit_5G[regulation][bandwidth][rateSection][channelIndex][RF_PATH_A]);
+		RTW_INFO("5G Band value : [regulation %d][bw %d][rate_section %d][chnl %d][val %d]\n"
+			, regulation, bandwidth, rateSection, channel, pHalData->TxPwrLimit_5G[regulation][bandwidth][rateSection][channelIndex][RF_PATH_A]);
 	} else {
 		RTW_PRINT("Cannot recognize the band info in %s\n", Band);
 		return;
@@ -3875,7 +3873,7 @@ void dump_tx_power_ext_info(void *sel, _adapter *adapter)
 	if (regsty->target_tx_pwr_valid == _TRUE)
 		RTW_PRINT_SEL(sel, "target_tx_power: from registry\n");
 	else if (phy_is_tx_power_by_rate_needed(adapter))
-		RTW_PRINT_SEL(sel, "target_tx_power: from power by rate\n"); 
+		RTW_PRINT_SEL(sel, "target_tx_power: from power by rate\n");
 	else
 		RTW_PRINT_SEL(sel, "target_tx_power: unavailable\n");
 
