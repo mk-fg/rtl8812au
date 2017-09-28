@@ -1087,7 +1087,7 @@ u32 phy_get_tx_bb_swing_8812a(
 		}
 	}
 
-	/* RTW_INFO("<=== phy_get_tx_bb_swing_8812a, out = 0x%X\n", out); */
+	RTW_INFO("<=== phy_get_tx_bb_swing_8812a: out=0x%X\n", out);
 
 	return out;
 }
