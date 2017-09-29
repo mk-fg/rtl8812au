@@ -104,9 +104,10 @@ Relevant hostapd.conf options used for AP dongle and test::
   ht_capab=[HT40+][SHORT-GI-40]
   vht_capab=[SHORT-GI-80][MAX-MPDU-11454][MAX-A-MPDU-LEN-EXP7]
 
-Note that LDPC/STBC/Beamforming should be enabled for AP/STA implicitly,
-if dongle/driver support these, and can be checked by grepping "RTW: Current STA"
-in dmesg (with debug logging enabled) after connection (vs flags in rtw_vht.c).
+Note that some of LDPC/STBC/Beamforming options should be enabled for AP/STA
+implicitly, if dongle/driver support these, and can be checked by grepping
+"RTW: Current STA" in dmesg (with debug logging enabled) after connection
+(vs flags in rtw_vht.c).
 
 Same as for test results, these aren't necessarily supported by all dongles,
 and some dongles might allow e.g. 160MHz or 80+80 channel widths
@@ -120,6 +121,27 @@ For a bit more info on AP/STA mode configuration, see following links:
 
 Very similar performance between 5.1.5 (old-5.1.5 branch) and 5.2.20 (this one)
 driver versions, while 5.2.9 is way worse.
+
+
+
+Misc Notes
+----------
+
+- Driver initially had bunch of regdb overrides, maybe to operate with no/broken
+  regdb, which are removed here, to avoid any extra restrictions from these.
+
+- Module parameter rtw_tx_pwr_idx_override (1-63, 0 - default/disabled) allows
+  to override "tx power index" value for all channels/rates, regardless of all
+  other parameters (regdb, CONFIG_TXPWR_BY_RATE_EN, CONFIG_TXPWR_LIMIT_EN,
+  CONFIG_USB2_EXTERNAL_POWER, etc), if set to non-0.
+
+  CONFIG_DBG_TXPOWER can be used to check default/overidden values for that
+  (enabled with DEBUG>1, "TXPWR:" prefix).
+
+- CONFIG_USB2_EXTERNAL_POWER is default-enabled in Makefile, can be set to "n"
+  to force some txpower limit, don't remember which one.
+
+- DFS is default-disabled in Makefile.
 
 
 
