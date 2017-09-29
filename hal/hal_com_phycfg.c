@@ -1367,6 +1367,9 @@ phy_SetTxPowerByRateBase(
 		return;
 	}
 
+	if (Adapter->registrypriv.RegTxPowerIndexOverride)
+		Value = Adapter->registrypriv.RegTxPowerIndexOverride;
+
 	if (DBG_TX_POWER_IDX)
 		RTW_INFO( "TXPWR: by-rate-base [%c] RateSection:%d in %sG, TxNum:%d = %d\n",
 			rf_path_char(RfPath), RateSection, (Band == BAND_ON_2_4G) ? "2.4" : "5", TxNum, Value );
@@ -2728,6 +2731,9 @@ PHY_SetTxPowerByRate(
 		return;
 	}
 
+	if (pAdapter->registrypriv.RegTxPowerIndexOverride)
+		Value = pAdapter->registrypriv.RegTxPowerIndexOverride;
+
 	if (DBG_TX_POWER_IDX)
 		RTW_INFO( "TXPWR: by-rate [%c] %sG %s TxNum:%d = %d\n",
 			rf_path_char(RFPath), (Band == BAND_ON_2_4G) ? "2.4" : "5",
@@ -2785,6 +2791,10 @@ PHY_SetTxPowerIndexByRateArray(
 	int	i = 0;
 
 	for (i = 0; i < RateArraySize; ++i) {
+
+		if (pAdapter->registrypriv.RegTxPowerIndexOverride)
+			powerIndex = (u32)pAdapter->registrypriv.RegTxPowerIndexOverride;
+
 #if DBG_TX_POWER_IDX
 		struct txpwr_idx_comp tic;
 
@@ -3635,6 +3645,10 @@ PHY_SetTxPowerIndex(
 	IN	u8				Rate
 )
 {
+
+	if (pAdapter->registrypriv.RegTxPowerIndexOverride)
+		PowerIndex = (u32)pAdapter->registrypriv.RegTxPowerIndexOverride;
+
 	/* if (DBG_TX_POWER_IDX) */
 	/* 	RTW_INFO( "TXPWR: set-index [%c] %s pwr_idx:%u\n", */
 	/* 		rf_path_char(RFPath), MGN_RATE_STR(Rate), PowerIndex ); */
