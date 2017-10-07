@@ -1,10 +1,18 @@
 rtl8812au
 =========
 
-Linux kernel driver for rtl8812au/rtl8821au/rtl8811au USB WiFi chipsets.
+**Note:** this is an old branch based on 5.1.5 realtek driver code, see master
+branch for later 5.2.9 version with similar patchset.
 
-Experimental build of driver-5.1.5 branch from uminokoe/rtl8812AU, with some
-patches from diederikdehaas/rtl8812AU to build it on ArchLinuxARM.
+Linux kernel driver for rtl8812au/rtl8821au/rtl8811au USB WiFi chipsets, based
+on version 5.1.5 of upstream Realtek driver from xxNull-lsk/rtl8812AU and
+uminokoe/rtl8812AU (no longer available):
+
+- https://github.com/xxNull-lsk/rtl8812AU
+
+Includes patches for VHT operation, removing hardcoded regulatory domain restrictions,
+and some others, mostly cherry-picked from other driver versions (e.g. diederikdehaas/rtl8812AU),
+plus some extra patches to build it on ArchLinuxARM.
 
 For ArchLinuxARM PKGBUILDs of module from this repo for Raspberry Pi 2/3
 (armv7h) and ODROID-C2 (aarch64), see:
