@@ -200,7 +200,6 @@ phydm_set_kfree_to_rf_8821c(
 {
 	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
 	struct odm_rf_calibration_structure	*p_rf_calibrate_info = &(p_dm_odm->rf_calibrate_info);
-	boolean is_odd;
 	u8	wlg, btg;
 
 	odm_set_rf_reg(p_dm_odm, e_rf_path, 0xde, BIT(0), 1);
@@ -458,7 +457,6 @@ phydm_set_kfree_to_rf_8822b(
 )
 {
 	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
-	struct odm_rf_calibration_structure	*p_rf_calibrate_info = &(p_dm_odm->rf_calibrate_info);
 
 	odm_set_rf_reg(p_dm_odm, e_rf_path, 0xde, BIT(0), 1);
 	odm_set_rf_reg(p_dm_odm, e_rf_path, 0xde, BIT(4), 1);

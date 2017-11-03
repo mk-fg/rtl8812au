@@ -11154,8 +11154,13 @@ unsigned int receive_disconnect(_adapter *padapter, unsigned char *MacAddr, unsi
 
 	if ((pmlmeinfo->state & 0x03) == WIFI_FW_STATION_STATE) {
 		if (pmlmeinfo->state & WIFI_FW_ASSOC_SUCCESS) {
-			if (report_del_sta_event(padapter, MacAddr, reason, _TRUE, locally_generated) != _FAIL)
-				pmlmeinfo->state = WIFI_FW_NULL_STATE;
+			if (check_fwstate(&(padapter->mlmepriv), WIFI_UNDER_DISCONNTING) == _FALSE) {
+				set_fwstate(&(padapter->mlmepriv), WIFI_UNDER_DISCONNTING);
+				if (report_del_sta_event(padapter, MacAddr, reason, _TRUE, locally_generated) != _FAIL)
+					pmlmeinfo->state = WIFI_FW_NULL_STATE;
+			} else {
+				RTW_INFO(FUNC_ADPT_FMT" WIFI_UNDER_DISCONNTING exit\n", FUNC_ADPT_ARG(padapter));
+			}
 		} else if (pmlmeinfo->state & WIFI_FW_LINKING_STATE) {
 			if (report_join_res(padapter, -2) != _FAIL)
 				pmlmeinfo->state = WIFI_FW_NULL_STATE;
@@ -15788,6 +15793,10 @@ u8 tdls_hdl(_adapter *padapter, unsigned char *pbuf)
 #endif
 		rtw_sta_media_status_rpt(padapter, ptdls_sta, 0);
 		free_tdls_sta(padapter, ptdls_sta);
+
+		if (ptdlsinfo->tdls_sctx != NULL)
+			rtw_sctx_done(&(ptdlsinfo->tdls_sctx));
+
 		break;
 	}
 

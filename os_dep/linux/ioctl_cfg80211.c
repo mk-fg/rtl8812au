@@ -1257,6 +1257,8 @@ static int rtw_cfg80211_set_encryption(struct net_device *dev, struct ieee_param
 						_rtw_memcpy(padapter->securitypriv.dot118021XGrptxmickey[param->u.crypt.idx].skey, &(param->u.crypt.key[16]), 8);
 						_rtw_memcpy(padapter->securitypriv.dot118021XGrprxmickey[param->u.crypt.idx].skey, &(param->u.crypt.key[24]), 8);
 						padapter->securitypriv.binstallGrpkey = _TRUE;
+						if (param->u.crypt.idx < 4)
+							_rtw_memcpy(padapter->securitypriv.iv_seq[param->u.crypt.idx], param->u.crypt.seq, 8);
 						/* DEBUG_ERR((" param->u.crypt.key_len=%d\n", param->u.crypt.key_len)); */
 						RTW_INFO(" ~~~~set sta key:groupkey\n");
 
@@ -3034,7 +3036,7 @@ leave_ibss:
 static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 				struct cfg80211_connect_params *sme)
 {
-	int ret = 0;
+	int ret = 0, set_security_ret = 0;
 	struct wlan_network *pnetwork = NULL;
 	NDIS_802_11_AUTHENTICATION_MODE authmode;
 	NDIS_802_11_SSID ndis_ssid;
@@ -3113,6 +3115,13 @@ static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 	}
 #endif
 
+	if (check_fwstate(pmlmepriv, WIFI_UNDER_DISCONNTING)) {
+		RTW_INFO(FUNC_NDEV_FMT" WIFI_UNDER_DISCONNTING exit\n", FUNC_NDEV_ARG(ndev));
+		ret = -EBUSY;
+		goto cancel_ps_deny;
+	}
+
+
 	rtw_mi_scan_abort(padapter, _TRUE);
 
 	_rtw_memset(&ndis_ssid, 0, sizeof(NDIS_802_11_SSID));
@@ -3124,8 +3133,21 @@ static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 
 	if (sme->bssid)
 		RTW_INFO("bssid="MAC_FMT"\n", MAC_ARG(sme->bssid));
+#if 1
+	set_security_ret = rtw_set_securitypriv_cmd(padapter, (u8 *)sme);
 
-
+	if (set_security_ret < 0) {
+		RTW_INFO("rtw_set_securitypriv_cmd=%d\n", ret);
+		ret = -EBUSY;
+		goto cancel_ps_deny;
+	} else {
+		if (psecuritypriv->set_security_ret < 0) {
+			ret = psecuritypriv->set_security_ret;
+			RTW_INFO("psecuritypriv->set_security_ret=%d\n", psecuritypriv->set_security_ret);
+			goto cancel_ps_deny;
+		}
+	}
+#else
 	psecuritypriv->ndisencryptstatus = Ndis802_11EncryptionDisabled;
 	psecuritypriv->dot11PrivacyAlgrthm = _NO_PRIVACY_;
 	psecuritypriv->dot118021XGrpPrivacy = _NO_PRIVACY_;
@@ -3249,10 +3271,11 @@ static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 
 	authmode = psecuritypriv->ndisauthtype;
 	rtw_set_802_11_authentication_mode(padapter, authmode);
-
+#endif
 	/* rtw_set_802_11_encryption_mode(padapter, padapter->securitypriv.ndisencryptstatus); */
 
 	if (rtw_set_802_11_connect(padapter, (u8 *)sme->bssid, &ndis_ssid) == _FALSE) {
+		RTW_INFO("rtw_set_802_11_connect=_FALSE\n");
 		ret = -1;
 		goto cancel_ps_deny;
 	}
@@ -3302,8 +3325,15 @@ static int cfg80211_rtw_disconnect(struct wiphy *wiphy, struct net_device *ndev,
 
 	rtw_set_to_roam(padapter, 0);
 
+	if (MLME_IS_STA(padapter) && check_fwstate(&(padapter->mlmepriv), WIFI_UNDER_DISCONNTING)) {
+		RTW_INFO(FUNC_NDEV_FMT" WIFI_UNDER_DISCONNTING exit\n", FUNC_NDEV_ARG(ndev));
+		goto exit;
+	}
+
 	/* if(check_fwstate(&padapter->mlmepriv, _FW_LINKED)) */
 	{
+		set_fwstate(&(padapter->mlmepriv), WIFI_UNDER_DISCONNTING);
+	
 		rtw_scan_abort(padapter);
 		LeaveAllPowerSaveMode(padapter);
 		rtw_disassoc_cmd(padapter, 500, RTW_CMDF_WAIT_ACK);
@@ -3316,6 +3346,7 @@ static int cfg80211_rtw_disconnect(struct wiphy *wiphy, struct net_device *ndev,
 		rtw_pwr_wakeup(padapter);
 	}
 
+exit:
 	rtw_wdev_set_not_indic_disco(pwdev_priv, 0);
 
 	RTW_INFO(FUNC_NDEV_FMT" return 0\n", FUNC_NDEV_ARG(ndev));
@@ -4331,9 +4362,9 @@ static int	cfg80211_rtw_del_station(struct wiphy *wiphy, struct net_device *ndev
 		RTW_INFO("flush all sta, and cam_entry\n");
 
 		flush_all_cam_entry(padapter);	/* clear CAM */
-
+#ifdef CONFIG_AP_MODE
 		ret = rtw_sta_flush(padapter, _TRUE);
-
+#endif
 		return ret;
 	}
 
@@ -7226,6 +7257,146 @@ void rtw_cfg80211_dev_res_unregister(struct dvobj_priv *dvobj)
 #if defined(RTW_SINGLE_WIPHY)
 	rtw_wiphy_unregister(dvobj_to_wiphy(dvobj));
 #endif
+}
+
+void rtw_cfg80211_set_securitypriv(_adapter *padapter, u8 *buf)
+{
+	struct cfg80211_connect_params *sme = (struct cfg80211_connect_params *)buf;
+	NDIS_802_11_AUTHENTICATION_MODE authmode;
+	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+	struct security_priv *psecuritypriv = &padapter->securitypriv;
+	int ret = 0;
+
+	RTW_INFO("=>"FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(padapter));
+	psecuritypriv->ndisencryptstatus = Ndis802_11EncryptionDisabled;
+	psecuritypriv->dot11PrivacyAlgrthm = _NO_PRIVACY_;
+	psecuritypriv->dot118021XGrpPrivacy = _NO_PRIVACY_;
+	psecuritypriv->dot11AuthAlgrthm = dot11AuthAlgrthm_Open; /* open system */
+	psecuritypriv->ndisauthtype = Ndis802_11AuthModeOpen;
+
+	psecuritypriv->set_security_ret = 0;
+
+#ifdef CONFIG_WAPI_SUPPORT
+	padapter->wapiInfo.bWapiEnable = false;
+#endif
+
+	ret = rtw_cfg80211_set_wpa_version(psecuritypriv, sme->crypto.wpa_versions);
+	if (ret < 0)
+		goto exit;
+
+#ifdef CONFIG_WAPI_SUPPORT
+	if (sme->crypto.wpa_versions & NL80211_WAPI_VERSION_1) {
+		padapter->wapiInfo.bWapiEnable = true;
+		padapter->wapiInfo.extra_prefix_len = WAPI_EXT_LEN;
+		padapter->wapiInfo.extra_postfix_len = SMS4_MIC_LEN;
+	}
+#endif
+
+	ret = rtw_cfg80211_set_auth_type(psecuritypriv, sme->auth_type);
+
+#ifdef CONFIG_WAPI_SUPPORT
+	if (psecuritypriv->dot11AuthAlgrthm == dot11AuthAlgrthm_WAPI)
+		padapter->mlmeextpriv.mlmext_info.auth_algo = psecuritypriv->dot11AuthAlgrthm;
+#endif
+
+
+	if (ret < 0)
+		goto exit;
+
+	RTW_INFO("%s, ie_len=%zu\n", __func__, sme->ie_len);
+
+	ret = rtw_cfg80211_set_wpa_ie(padapter, (u8 *)sme->ie, sme->ie_len);
+	if (ret < 0)
+		goto exit;
+
+	if (sme->crypto.n_ciphers_pairwise) {
+		ret = rtw_cfg80211_set_cipher(psecuritypriv, sme->crypto.ciphers_pairwise[0], _TRUE);
+		if (ret < 0)
+			goto exit;
+	}
+
+	/* For WEP Shared auth */
+	if (sme->key_len > 0 && sme->key) {
+		u32 wep_key_idx, wep_key_len, wep_total_len;
+		NDIS_802_11_WEP	*pwep = NULL;
+		RTW_INFO("%s(): Shared/Auto WEP\n", __FUNCTION__);
+
+		wep_key_idx = sme->key_idx;
+		wep_key_len = sme->key_len;
+
+		if (sme->key_idx > WEP_KEYS) {
+			ret = -EINVAL;
+			goto exit;
+		}
+
+		if (wep_key_len > 0) {
+			wep_key_len = wep_key_len <= 5 ? 5 : 13;
+			wep_total_len = wep_key_len + FIELD_OFFSET(NDIS_802_11_WEP, KeyMaterial);
+			pwep = (NDIS_802_11_WEP *) rtw_malloc(wep_total_len);
+			if (pwep == NULL) {
+				RTW_INFO(" wpa_set_encryption: pwep allocate fail !!!\n");
+				ret = -ENOMEM;
+				goto exit;
+			}
+
+			_rtw_memset(pwep, 0, wep_total_len);
+
+			pwep->KeyLength = wep_key_len;
+			pwep->Length = wep_total_len;
+
+			if (wep_key_len == 13) {
+				padapter->securitypriv.dot11PrivacyAlgrthm = _WEP104_;
+				padapter->securitypriv.dot118021XGrpPrivacy = _WEP104_;
+			}
+		} else {
+			ret = -EINVAL;
+			goto exit;
+		}
+
+		pwep->KeyIndex = wep_key_idx;
+		pwep->KeyIndex |= 0x80000000;
+
+		_rtw_memcpy(pwep->KeyMaterial, (void *)sme->key, pwep->KeyLength);
+
+		if (rtw_set_802_11_add_wep(padapter, pwep) == (u8)_FAIL)
+			ret = -EOPNOTSUPP ;
+
+		if (pwep)
+			rtw_mfree((u8 *)pwep, wep_total_len);
+
+		if (ret < 0)
+			goto exit;
+	}
+
+	ret = rtw_cfg80211_set_cipher(psecuritypriv, sme->crypto.cipher_group, _FALSE);
+	if (ret < 0)
+		goto exit;
+
+	if (sme->crypto.n_akm_suites) {
+		ret = rtw_cfg80211_set_key_mgt(psecuritypriv, sme->crypto.akm_suites[0]);
+		if (ret < 0)
+			goto exit;
+	}
+#ifdef CONFIG_8011R
+	else {
+		/*It could be a connection without RSN IEs*/
+		psecuritypriv->rsn_akm_suite_type = 0;
+	}
+#endif
+
+#ifdef CONFIG_WAPI_SUPPORT
+	if (sme->crypto.akm_suites[0] == WLAN_AKM_SUITE_WAPI_PSK)
+		padapter->wapiInfo.bWapiPSK = true;
+	else if (sme->crypto.akm_suites[0] == WLAN_AKM_SUITE_WAPI_CERT)
+		padapter->wapiInfo.bWapiPSK = false;
+#endif
+
+	authmode = psecuritypriv->ndisauthtype;
+	rtw_set_802_11_authentication_mode(padapter, authmode);
+
+exit:
+	psecuritypriv->set_security_ret = ret;
+	RTW_INFO("<="FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(padapter));
 }
 
 #endif /* CONFIG_IOCTL_CFG80211 */

@@ -51,7 +51,7 @@
 #define WIFI_ADHOC_MASTER_STATE			0x00000040
 #define WIFI_UNDER_LINKING				0x00000080
 #define WIFI_UNDER_WPS					0x00000100
-/*#define WIFI_UNDEFINED_STATE			0x00000200*/
+#define WIFI_UNDER_DISCONNTING			0x00000200
 #define WIFI_STA_ALIVE_CHK_STATE		0x00000400
 #define WIFI_SITE_MONITOR				0x00000800 /* under site surveying */
 #define WIFI_WDS						0x00001000
@@ -486,6 +486,8 @@ struct tdls_info {
 #ifdef CONFIG_WFD
 	struct wifi_display_info		*wfd_info;
 #endif
+
+	struct submit_ctx	*tdls_sctx;
 };
 
 struct tdls_txmgmt {

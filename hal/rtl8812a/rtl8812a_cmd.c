@@ -69,7 +69,7 @@ s32 fill_h2c_cmd_8812(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffe
 	u32	msgbox_addr;
 	u32 msgbox_ex_addr;
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
-	u8 cmd_idx, ext_cmd_len;
+	u8 cmd_idx;
 	u32	h2c_cmd = 0;
 	u32	h2c_cmd_ex = 0;
 	s32 ret = _FAIL;
@@ -105,23 +105,24 @@ s32 fill_h2c_cmd_8812(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffe
 
 		*(u8 *)(&h2c_cmd) = ElementID;
 
-		if (CmdLen <= 3)
+		if (CmdLen <= 3) {
 			_rtw_memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, CmdLen);
-		else {
+			h2c_cmd_ex = 0;
+		} else {
 			_rtw_memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, 3);
-			ext_cmd_len = CmdLen - 3;
-			_rtw_memcpy((u8 *)(&h2c_cmd_ex), pCmdBuffer + 3, ext_cmd_len);
-
-			/* Write Ext command */
-			msgbox_ex_addr = REG_HMEBOX_EXT0_8812 + (h2c_box_num * RTL8812_EX_MESSAGE_BOX_SIZE);
-#ifdef CONFIG_H2C_EF
-			for (cmd_idx = 0; cmd_idx < ext_cmd_len; cmd_idx++)
-				rtw_write8(padapter, msgbox_ex_addr + cmd_idx, *((u8 *)(&h2c_cmd_ex) + cmd_idx));
-#else
-			h2c_cmd_ex = le32_to_cpu(h2c_cmd_ex);
-			rtw_write32(padapter, msgbox_ex_addr, h2c_cmd_ex);
-#endif
+			_rtw_memcpy((u8 *)(&h2c_cmd_ex), pCmdBuffer + 3, (CmdLen - 3));
 		}
+
+		/* Write Ext command */
+		msgbox_ex_addr = REG_HMEBOX_EXT0_8812 + (h2c_box_num * RTL8812_EX_MESSAGE_BOX_SIZE);
+#ifdef CONFIG_H2C_EF
+		for (cmd_idx = 0; cmd_idx < RTL8812_EX_MESSAGE_BOX_SIZE; cmd_idx++)
+			rtw_write8(padapter, msgbox_ex_addr + cmd_idx, *((u8 *)(&h2c_cmd_ex) + cmd_idx));
+#else
+		h2c_cmd_ex = le32_to_cpu(h2c_cmd_ex);
+		rtw_write32(padapter, msgbox_ex_addr, h2c_cmd_ex);
+#endif
+
 		/* Write command */
 		msgbox_addr = REG_HMEBOX_0 + (h2c_box_num * RTL8812_MESSAGE_BOX_SIZE);
 #ifdef CONFIG_H2C_EF

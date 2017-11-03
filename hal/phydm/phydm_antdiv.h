@@ -472,6 +472,14 @@ phydm_set_tx_ant_pwr_8723d(
 	u8			ant
 );
 
+void
+odm_update_rx_idle_ant_8723d(
+	void			*p_dm_void,
+	u8			ant,
+	u32			default_ant,
+	u32			optional_ant
+);
+
 #endif
 
 #ifdef CONFIG_S0S1_SW_ANTENNA_DIVERSITY

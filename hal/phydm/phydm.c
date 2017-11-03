@@ -225,6 +225,11 @@ phydm_traffic_load_decision(
 #endif
 	p_dm_odm->total_tp = p_dm_odm->tx_tp + p_dm_odm->rx_tp;
 
+	if (p_dm_odm->total_tp == 0)
+		p_dm_odm->consecutive_idlel_time += PHYDM_WATCH_DOG_PERIOD;
+	else
+		p_dm_odm->consecutive_idlel_time = 0;
+
 	/*
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_COMMON, ODM_DBG_LOUD, ("cur_tx_ok_cnt = %d, cur_rx_ok_cnt = %d, last_tx_ok_cnt = %d, last_rx_ok_cnt = %d\n",
 		p_dm_odm->cur_tx_ok_cnt, p_dm_odm->cur_rx_ok_cnt, p_dm_odm->last_tx_ok_cnt, p_dm_odm->last_rx_ok_cnt));
@@ -784,8 +789,8 @@ phydm_get_structure(
 
 	case	PHYDM_ADAPTIVITY:
 		p_struct = &(p_dm_odm->adaptivity);
-		break;
-
+		break;	
+		
 	default:
 		break;
 	}
@@ -804,6 +809,10 @@ phydm_get_structure(
 		p_struct = &(p_dm_odm->adaptivity);
 		break;
 
+	case	PHYDM_DFS:
+		p_struct = &(p_dm_odm->dfs);
+		break;
+		
 	default:
 		break;
 	}
@@ -1586,6 +1595,63 @@ phydm_supportability_init_iot(
 #endif
 
 void
+phydm_fwoffload_ability_init(
+	struct PHY_DM_STRUCT		*p_dm_odm,
+	enum phydm_offload_ability	offload_ability
+)
+{
+
+	switch (offload_ability) {
+
+	case	PHYDM_PHY_PARAM_OFFLOAD:
+		if (p_dm_odm->support_ic_type & ODM_RTL8822B)
+			p_dm_odm->fw_offload_ability |= PHYDM_PHY_PARAM_OFFLOAD;
+		break;
+
+	case	PHYDM_RF_IQK_OFFLOAD:
+		p_dm_odm->fw_offload_ability |= PHYDM_RF_IQK_OFFLOAD;
+		break;
+
+	default:
+		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("fwofflad, wrong init type!!\n"));
+		break;
+
+	}
+
+	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
+		("fw_offload_ability = %x\n", p_dm_odm->fw_offload_ability));
+
+}
+void
+phydm_fwoffload_ability_clear(
+	struct PHY_DM_STRUCT		*p_dm_odm,
+	enum phydm_offload_ability	offload_ability
+)
+{
+
+	switch (offload_ability) {
+
+	case	PHYDM_PHY_PARAM_OFFLOAD:
+		if (p_dm_odm->support_ic_type & ODM_RTL8822B)
+			p_dm_odm->fw_offload_ability &= (~PHYDM_PHY_PARAM_OFFLOAD);
+		break;
+
+	case	PHYDM_RF_IQK_OFFLOAD:
+		p_dm_odm->fw_offload_ability &= (~PHYDM_RF_IQK_OFFLOAD);
+		break;
+
+	default:
+		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("fwofflad, wrong init type!!\n"));
+		break;
+
+	}
+
+	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
+		("fw_offload_ability = %x\n", p_dm_odm->fw_offload_ability));
+
+}
+
+void
 phydm_supportability_init(
 	void		*p_dm_void
 )
@@ -1847,6 +1913,7 @@ odm_dm_watchdog(
 {
 	odm_common_info_self_update(p_dm_odm);
 	phydm_basic_dbg_message(p_dm_odm);
+	phydm_receiver_blocking(p_dm_odm);
 	odm_hw_setting(p_dm_odm);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)
@@ -4099,3 +4166,44 @@ phydm_dc_cancellation(
 	}
 #endif
 }
+
+void
+phydm_receiver_blocking(
+	void *p_dm_void
+)
+{
+#ifdef CONFIG_RECEIVER_BLOCKING
+	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
+	u32	channel = *p_dm_odm->p_channel;
+	u8	bw = *p_dm_odm->p_band_width;
+	u8	set_result = 0;
+
+	if (!(p_dm_odm->support_ic_type & ODM_RECEIVER_BLOCKING_SUPPORT))
+		return;
+
+	if (p_dm_odm->consecutive_idlel_time > 10 && *p_dm_odm->p_mp_mode == false && p_dm_odm->adaptivity_enable == true) {
+		if ((bw == ODM_BW20M) && (channel == 1)) {
+			set_result = phydm_nbi_setting(p_dm_odm, NBI_ENABLE, channel, 20, 2410, PHYDM_DONT_CARE);
+			p_dm_odm->is_receiver_blocking_en = true;
+		} else if ((bw == ODM_BW20M) && (channel == 13)) {
+			set_result = phydm_nbi_setting(p_dm_odm, NBI_ENABLE, channel, 20, 2473, PHYDM_DONT_CARE);
+			p_dm_odm->is_receiver_blocking_en = true;
+		} else if (*(p_dm_odm->p_is_scan_in_process) == false) {
+			if (p_dm_odm->is_receiver_blocking_en && channel != 1 && channel != 13) {
+				phydm_nbi_enable(p_dm_odm, NBI_DISABLE);
+				odm_set_bb_reg(p_dm_odm, 0xc40, 0x1f000000, 0x1f);
+				p_dm_odm->is_receiver_blocking_en = false;
+			}
+		}
+	} else {
+		if (p_dm_odm->is_receiver_blocking_en) {
+			phydm_nbi_enable(p_dm_odm, NBI_DISABLE);
+			odm_set_bb_reg(p_dm_odm, 0xc40, 0x1f000000, 0x1f);
+			p_dm_odm->is_receiver_blocking_en = false;
+		}
+	}
+	ODM_RT_TRACE(p_dm_odm, PHYDM_COMP_ADAPTIVITY, ODM_DBG_LOUD, 
+		("[NBI set result: %s]\n", (set_result == SET_SUCCESS ? "Success" : (set_result == SET_NO_NEED ? "No need" : "Error"))));
+#endif
+}
+

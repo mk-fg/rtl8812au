@@ -147,14 +147,14 @@ s16 odm_inband_noise_monitor_n_series(struct PHY_DM_STRUCT	*p_dm_odm, u8 is_paus
 	reg_c50 = (u8)odm_get_bb_reg(p_dm_odm, REG_OFDM_0_XA_AGC_CORE1, MASKBYTE0);
 	reg_c50 &= ~BIT(7);
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_COMMON, ODM_DBG_LOUD, ("0x%x = 0x%02x(%d)\n", REG_OFDM_0_XA_AGC_CORE1, reg_c50, reg_c50));
-	p_dm_odm->noise_level.noise[ODM_RF_PATH_A] = (u8)(-110 + reg_c50 + noise_data.sum[ODM_RF_PATH_A]);
+	p_dm_odm->noise_level.noise[ODM_RF_PATH_A] = (s8)(-110 + reg_c50 + noise_data.sum[ODM_RF_PATH_A]);
 	p_dm_odm->noise_level.noise_all += p_dm_odm->noise_level.noise[ODM_RF_PATH_A];
 
 	if (max_rf_path == 2) {
 		reg_c58 = (u8)odm_get_bb_reg(p_dm_odm, REG_OFDM_0_XB_AGC_CORE1, MASKBYTE0);
 		reg_c58 &= ~BIT(7);
 		ODM_RT_TRACE(p_dm_odm, ODM_COMP_COMMON, ODM_DBG_LOUD, ("0x%x = 0x%02x(%d)\n", REG_OFDM_0_XB_AGC_CORE1, reg_c58, reg_c58));
-		p_dm_odm->noise_level.noise[ODM_RF_PATH_B] = (u8)(-110 + reg_c58 + noise_data.sum[ODM_RF_PATH_B]);
+		p_dm_odm->noise_level.noise[ODM_RF_PATH_B] = (s8)(-110 + reg_c58 + noise_data.sum[ODM_RF_PATH_B]);
 		p_dm_odm->noise_level.noise_all += p_dm_odm->noise_level.noise[ODM_RF_PATH_B];
 	}
 	p_dm_odm->noise_level.noise_all /= max_rf_path;

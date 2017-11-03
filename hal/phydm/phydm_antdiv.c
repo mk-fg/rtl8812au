@@ -140,11 +140,15 @@ odm_ant_div_on_off(
 			odm_set_bb_reg(p_dm_odm, 0xa00, BIT(15), swch);
 
 #if (RTL8723D_SUPPORT == 1)
+			/*Mingzhi 2017-05-08*/
 			if (p_dm_odm->support_ic_type == ODM_RTL8723D) {
-				if (swch == ANTDIV_ON)
+				if (swch == ANTDIV_ON) {
 					odm_set_bb_reg(p_dm_odm, 0xce0, BIT(1), 1);
-				else
+					odm_set_bb_reg(p_dm_odm, 0x948, BIT(6), 1);	/*1:HW ctrl  0:SW ctrl*/
+				} else {
 					odm_set_bb_reg(p_dm_odm, 0xce0, BIT(1), 0);
+					odm_set_bb_reg(p_dm_odm, 0x948, BIT(6), 0);	/*1:HW ctrl  0:SW ctrl*/ 
+				}	
 			}			
 #endif
 
@@ -291,17 +295,16 @@ odm_update_rx_idle_ant(
 					ODM_RT_TRACE(p_dm_odm, ODM_COMP_ANT_DIV, ODM_DBG_LOUD, ("[ Update Rx-Idle-ant ] 8723B: Fail to set RX antenna due to 0x948 = 0x280\n"));
 			}
 #endif
+#if (RTL8723D_SUPPORT == 1)         /*Mingzhi 2017-05-08*/
+			else if (p_dm_odm->support_ic_type == ODM_RTL8723D) {
+				phydm_set_tx_ant_pwr_8723d(p_dm_odm, ant);
+				odm_update_rx_idle_ant_8723d(p_dm_odm, ant, default_ant, optional_ant);
+			}
+#endif			
 			else { /*8188E & 8188F*/
-
-				if (p_dm_odm->support_ic_type == ODM_RTL8723D) {
-#if (RTL8723D_SUPPORT == 1)
-					phydm_set_tx_ant_pwr_8723d(p_dm_odm, ant);
-#endif
-				}
 #if (RTL8188F_SUPPORT == 1)
-				else if (p_dm_odm->support_ic_type == ODM_RTL8188F) {
+				if (p_dm_odm->support_ic_type == ODM_RTL8188F) {
 					phydm_update_rx_idle_antenna_8188F(p_dm_odm, default_ant);
-					/**/
 				}
 #endif
 
@@ -1158,6 +1161,32 @@ odm_trx_hw_ant_div_init_8723d(
 
 }
 
+/*Mingzhi 2017-05-08*/
+void
+odm_update_rx_idle_ant_8723d(
+	void			*p_dm_void,
+	u8			ant,
+	u32			default_ant,
+	u32			optional_ant
+)
+{
+	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
+	struct _FAST_ANTENNA_TRAINNING_			*p_dm_fat_table = &p_dm_odm->dm_fat_table;
+	struct _ADAPTER		*p_adapter = p_dm_odm->adapter;
+	HAL_DATA_TYPE	*p_hal_data = GET_HAL_DATA(p_adapter);
+	u8			count = 0;
+	u8			u1_temp;
+	u8			h2c_parameter;
+	
+
+/*	odm_set_bb_reg(p_dm_odm, 0x948, BIT(6), 0x1);	*/
+	odm_set_bb_reg(p_dm_odm, 0x948, BIT(7), default_ant);
+	odm_set_bb_reg(p_dm_odm, 0x864, BIT(5) | BIT(4) | BIT(3), default_ant);      /*Default RX*/
+	odm_set_bb_reg(p_dm_odm, 0x864, BIT(8) | BIT(7) | BIT(6), optional_ant);     /*Optional RX*/
+	odm_set_bb_reg(p_dm_odm, 0x860, BIT(14) | BIT(13) | BIT(12), default_ant);    /*Default TX*/
+	p_dm_fat_table->rx_idle_ant = ant;
+}
+
 void
 phydm_set_tx_ant_pwr_8723d(
 	void			*p_dm_void,
@@ -1486,7 +1515,6 @@ odm_trx_hw_ant_div_init_8821a(
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(29), 1); /* PAPE by WLAN control */
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(28), 1); /* LNAON by WLAN control */
 
-	odm_set_bb_reg(p_dm_odm, 0xCB0, MASKDWORD, 0x77775745);
 	odm_set_bb_reg(p_dm_odm, 0xCB8, BIT(16), 0);
 
 	odm_set_mac_reg(p_dm_odm, 0x4C, BIT(23), 0); /* select DPDT_P and DPDT_N as output pin */
@@ -1538,7 +1566,6 @@ odm_s0s1_sw_ant_div_init_8821a(
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(29), 1); /* PAPE by WLAN control */
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(28), 1); /* LNAON by WLAN control */
 
-	odm_set_bb_reg(p_dm_odm, 0xCB0, MASKDWORD, 0x77775745);
 	odm_set_bb_reg(p_dm_odm, 0xCB8, BIT(16), 0);
 
 	odm_set_mac_reg(p_dm_odm, 0x4C, BIT(23), 0); /* select DPDT_P and DPDT_N as output pin */
@@ -1736,7 +1763,6 @@ odm_trx_hw_ant_div_init_8821c(
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(29), 1); /* PAPE by WLAN control */
 	odm_set_mac_reg(p_dm_odm, 0x64, BIT(28), 1); /* LNAON by WLAN control */
 
-	odm_set_bb_reg(p_dm_odm, 0xCB0, MASKDWORD, 0x77775745);
 	odm_set_bb_reg(p_dm_odm, 0xCB8, BIT(16), 0);
 
 	odm_set_mac_reg(p_dm_odm, 0x4C, BIT(23), 0); /* select DPDT_P and DPDT_N as output pin */

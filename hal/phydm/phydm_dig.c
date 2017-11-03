@@ -1172,11 +1172,15 @@ odm_DIG(
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE))
 	if (p_dm_odm->is_linked && !first_connect) {
 		ODM_RT_TRACE(p_dm_odm, ODM_COMP_DIG, ODM_DBG_LOUD, ("Beacon Num (%d)\n", p_dm_odm->phy_dbg_info.num_qry_beacon_pkt));
-		if ((p_dm_odm->phy_dbg_info.num_qry_beacon_pkt < 5) && (p_dm_odm->bsta_state)) {
-			p_dm_dig_table->rx_gain_range_min = 0x1c;
-			ODM_RT_TRACE(p_dm_odm, ODM_COMP_DIG, ODM_DBG_LOUD, ("DIG: Abnrormal #beacon (%d) case in STA mode: Force lower bound to 0x%x\n",
-				p_dm_odm->phy_dbg_info.num_qry_beacon_pkt, p_dm_dig_table->rx_gain_range_min));
+#if (RTL8723D_SUPPORT == 1)
+		if (p_dm_odm->support_ic_type != ODM_RTL8723D) {
+			if ((p_dm_odm->phy_dbg_info.num_qry_beacon_pkt < 5) && (p_dm_odm->bsta_state)) {
+				p_dm_dig_table->rx_gain_range_min = 0x1c;
+				ODM_RT_TRACE(p_dm_odm, ODM_COMP_DIG, ODM_DBG_LOUD, ("DIG: Abnrormal #beacon (%d) case in STA mode: Force lower bound to 0x%x\n",
+					p_dm_odm->phy_dbg_info.num_qry_beacon_pkt, p_dm_dig_table->rx_gain_range_min));
+			}
 		}
+#endif
 	}
 #endif
 
@@ -1611,15 +1615,17 @@ odm_false_alarm_counter_statistics(
 		}
 	}
 #endif
+	if (p_dm_odm->support_ic_type != ODM_RTL8723D) {
+		
+		if (phydm_set_bb_dbg_port(p_dm_odm, BB_DBGPORT_PRIORITY_1, 0x0)) {/*set debug port to 0x0*/
+			false_alm_cnt->dbg_port0 = phydm_get_bb_dbg_port_value(p_dm_odm);
+			phydm_release_bb_dbg_port(p_dm_odm);
+		}
 
-	if (phydm_set_bb_dbg_port(p_dm_odm, BB_DBGPORT_PRIORITY_1, 0x0)) {/*set debug port to 0x0*/
-		false_alm_cnt->dbg_port0 = phydm_get_bb_dbg_port_value(p_dm_odm);
-		phydm_release_bb_dbg_port(p_dm_odm);
-	}
-
-	if (phydm_set_bb_dbg_port(p_dm_odm, BB_DBGPORT_PRIORITY_1, adaptivity->adaptivity_dbg_port)) {
-		false_alm_cnt->edcca_flag = (boolean)((phydm_get_bb_dbg_port_value(p_dm_odm) & BIT(30))>>30);
-		phydm_release_bb_dbg_port(p_dm_odm);
+		if (phydm_set_bb_dbg_port(p_dm_odm, BB_DBGPORT_PRIORITY_1, adaptivity->adaptivity_dbg_port)) {
+			false_alm_cnt->edcca_flag = (boolean)((phydm_get_bb_dbg_port_value(p_dm_odm) & BIT(30))>>30);
+			phydm_release_bb_dbg_port(p_dm_odm);
+		}
 	}
 
 	false_alm_cnt->cnt_crc32_error_all = false_alm_cnt->cnt_vht_crc32_error + false_alm_cnt->cnt_ht_crc32_error + false_alm_cnt->cnt_ofdm_crc32_error + false_alm_cnt->cnt_cck_crc32_error;
@@ -1940,6 +1946,15 @@ odm_write_cck_cca_thres(
 	if (p_dm_dig_table->cur_cck_cca_thres != cur_cck_cca_thres) {	/* modify by Guo.Mingzhi 2012-01-03 */
 		odm_write_1byte(p_dm_odm, ODM_REG(CCK_CCA, p_dm_odm), cur_cck_cca_thres);
 		p_dm_dig_table->cck_fa_ma = 0xffffffff;
+		
+#if (RTL8723D_SUPPORT == 1)
+		if (p_dm_odm->support_ic_type & ODM_RTL8723D) {	/* modify by David_Ding for 8723D no Beacon issue */
+			if (cur_cck_cca_thres == 0x40)
+				odm_write_1byte(p_dm_odm, 0xAAA, 0x0C);
+			else
+				odm_write_1byte(p_dm_odm, 0xAAA, 0x10);
+		}
+#endif
 	}
 	p_dm_dig_table->pre_cck_cca_thres = p_dm_dig_table->cur_cck_cca_thres;
 	p_dm_dig_table->cur_cck_cca_thres = cur_cck_cca_thres;
@@ -2061,7 +2076,7 @@ phydm_dynamic_ant_weighting(
 	struct	PHY_DM_STRUCT						*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
 	struct	_CCX_INFO							*ccx_info = &p_dm_odm->dm_ccx_info;
 	struct _dynamic_initial_gain_threshold_		*p_dm_dig_table = &p_dm_odm->dm_dig_table;
-//	struct _FALSE_ALARM_STATISTICS		*p_false_alm_cnt = (struct _FALSE_ALARM_STATISTICS *)phydm_get_structure(p_dm_odm, PHYDM_FALSEALMCNT);
+	/* struct _FALSE_ALARM_STATISTICS		*p_false_alm_cnt = (struct _FALSE_ALARM_STATISTICS *)phydm_get_structure(p_dm_odm, PHYDM_FALSEALMCNT); */
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
 	prtl8192cd_priv			priv = p_dm_odm->priv;
@@ -2108,7 +2123,7 @@ phydm_dynamic_ant_weighting(
 	} else {
 		return;
 	}
-#endif	// #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
+#endif	/* #if (DM_ODM_SUPPORT_TYPE & (ODM_AP)) */
 #endif
 }
 

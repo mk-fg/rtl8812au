@@ -1734,6 +1734,10 @@ u8 rtw_clearstakey_cmd(_adapter *padapter, struct sta_info *sta, u8 enqueue)
 	s16 cam_id = 0;
 	u8	res = _SUCCESS;
 
+	if (!sta) {
+		RTW_ERR("%s sta == NULL\n", __func__);
+		goto exit;
+	}
 
 	if (!enqueue) {
 		while ((cam_id = rtw_camid_search(padapter, sta->hwaddr, -1, -1)) >= 0) {
@@ -2003,6 +2007,53 @@ u8 rtw_reset_securitypriv_cmd(_adapter *padapter)
 exit:
 
 
+	return res;
+
+}
+
+u8 rtw_set_securitypriv_cmd(_adapter *padapter, u8 *sme)
+{
+	struct cmd_obj *cmdobj;
+	struct drvextra_cmd_parm *pdrvextra_cmd_parm;
+	struct cmd_priv *pcmdpriv = &padapter->cmdpriv;
+	struct submit_ctx sctx;
+	u8	res = _SUCCESS;
+
+
+	cmdobj = (struct cmd_obj *)rtw_zmalloc(sizeof(struct cmd_obj));
+	if (cmdobj == NULL) {
+		res = _FAIL;
+		goto exit;
+	}
+
+	pdrvextra_cmd_parm = (struct drvextra_cmd_parm *)rtw_zmalloc(sizeof(struct drvextra_cmd_parm));
+	if (pdrvextra_cmd_parm == NULL) {
+		rtw_mfree((unsigned char *)cmdobj, sizeof(struct cmd_obj));
+		res = _FAIL;
+		goto exit;
+	}
+
+	pdrvextra_cmd_parm->ec_id = SET_SECURITYPRIV;
+	pdrvextra_cmd_parm->type = 0;
+	pdrvextra_cmd_parm->size = 0;
+	pdrvextra_cmd_parm->pbuf = sme;
+
+	init_h2fwcmd_w_parm_no_rsp(cmdobj, pdrvextra_cmd_parm, GEN_CMD_CODE(_Set_Drv_Extra));
+	cmdobj->sctx = &sctx;
+	rtw_sctx_init(&sctx, 2000);
+
+	/* rtw_enqueue_cmd(pcmdpriv, ph2c);	 */
+	res = rtw_enqueue_cmd(pcmdpriv, cmdobj);
+
+	if (res == _SUCCESS) {
+		rtw_sctx_wait(&sctx, __func__);
+		_enter_critical_mutex(&pcmdpriv->sctx_mutex, NULL);
+		if (sctx.status == RTW_SCTX_SUBMITTED)
+			cmdobj->sctx = NULL;
+		_exit_critical_mutex(&pcmdpriv->sctx_mutex, NULL);
+	}
+
+exit:
 	return res;
 
 }
@@ -3115,6 +3166,13 @@ void power_saving_wk_hdl(_adapter *padapter)
 void reset_securitypriv_hdl(_adapter *padapter)
 {
 	rtw_reset_securitypriv(padapter);
+}
+
+void set_securitypriv_hdl(_adapter *padapter, u8 *buf)
+{
+#ifdef CONFIG_IOCTL_CFG80211
+	rtw_cfg80211_set_securitypriv(padapter, buf);
+#endif
 }
 
 void free_assoc_resources_hdl(_adapter *padapter)
@@ -4576,6 +4634,9 @@ u8 rtw_drvextra_cmd_hdl(_adapter *padapter, unsigned char *pbuf)
 	/* add for CONFIG_IEEE80211W, none 11w can use it */
 	case RESET_SECURITYPRIV:
 		reset_securitypriv_hdl(padapter);
+		break;
+	case SET_SECURITYPRIV:
+		set_securitypriv_hdl(padapter, pdrvextra_cmd->pbuf);
 		break;
 	case FREE_ASSOC_RESOURCES:
 		free_assoc_resources_hdl(padapter);

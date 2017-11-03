@@ -1478,17 +1478,13 @@ void rtw_free_assoc_resources(_adapter *adapter, int lock_scanned_queue)
 		psta = rtw_get_stainfo(&adapter->stapriv, tgt_network->network.MacAddress);
 
 #ifdef CONFIG_TDLS
-		if (ptdlsinfo->link_established == _TRUE) {
-			rtw_tdls_cmd(adapter, NULL, TDLS_RS_RCR);
-			rtw_reset_tdls_info(adapter);
-			rtw_free_all_stainfo(adapter);
-			/* _enter_critical_bh(&(pstapriv->sta_hash_lock), &irqL); */
-		} else
+		rtw_free_all_tdls_sta(adapter, _TRUE);
+		rtw_tdls_cmd(adapter, NULL, TDLS_RS_RCR);
+		rtw_reset_tdls_info(adapter);
 #endif /* CONFIG_TDLS */
-		{
-			/* _enter_critical_bh(&(pstapriv->sta_hash_lock), &irqL); */
-			rtw_free_stainfo(adapter,  psta);
-		}
+
+		/* _enter_critical_bh(&(pstapriv->sta_hash_lock), &irqL); */
+		rtw_free_stainfo(adapter,  psta);
 
 		/* _exit_critical_bh(&(pstapriv->sta_hash_lock), &irqL); */
 
@@ -1648,7 +1644,7 @@ void rtw_indicate_disconnect(_adapter *padapter, u16 reason, u8 locally_generate
 		/* set ips_deny_time to avoid enter IPS before LPS leave */
 		rtw_set_ips_deny(padapter, 3000);
 
-		_clr_fwstate_(pmlmepriv, _FW_LINKED);
+		_clr_fwstate_(pmlmepriv, _FW_LINKED | WIFI_UNDER_DISCONNTING);
 
 		rtw_led_control(padapter, LED_CTL_NO_LINK);
 

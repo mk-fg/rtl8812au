@@ -108,6 +108,8 @@ extern const u16 phy_rate_table[28];
 #define	FREQ_POSITIVE	1
 #define	FREQ_NEGATIVE	2
 
+#define MAX_2(_x_, _y_)	(((_x_)>(_y_))? (_x_) : (_y_))
+#define MIN_2(_x_, _y_)	(((_x_)<(_y_))? (_x_) : (_y_))
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)
 	#define PHYDM_WATCH_DOG_PERIOD	1
@@ -567,7 +569,11 @@ enum odm_cca_path_e {
 enum cca_pathdiv_en_e {
 	CCA_PATHDIV_DISABLE		= 0,
 	CCA_PATHDIV_ENABLE		= 1,
+};
 
+enum phydm_offload_ability {
+	PHYDM_PHY_PARAM_OFFLOAD = BIT(0),
+	PHYDM_RF_IQK_OFFLOAD = BIT(1),
 };
 
 
@@ -684,8 +690,9 @@ enum phy_reg_pg_type {
 	u32			soft_ap_special_setting;
 	u8			rfe_hwsetting_band;
 	u8			p_advance_ota;
+	u16			fw_offload_ability;
 	boolean		hp_hw_id;
-
+	u8			is_receiver_blocking_en;
 	/*-----------HOOK BEFORE REG INIT-----------*/
 
 	/*Dynamic value*/
@@ -816,6 +823,7 @@ enum phy_reg_pg_type {
 	u64			cur_rx_ok_cnt;
 	u64			last_tx_ok_cnt;
 	u64			last_rx_ok_cnt;
+	u16			consecutive_idlel_time;	/*unit: second*/
 	u32			bb_swing_offset_a;
 	boolean			is_bb_swing_offset_positive_a;
 	u32			bb_swing_offset_b;
@@ -856,6 +864,7 @@ enum phy_reg_pg_type {
 	u8			default_rf_set_8821c;
 	u8			current_ant_num_8821c;
 	u8			default_ant_num_8821c;
+	u8			rfe_type_21c;
 	/*For Adaptivtiy*/
 	u16			nhm_cnt_0;
 	u16			nhm_cnt_1;
@@ -893,6 +902,7 @@ enum phy_reg_pg_type {
 	boolean			pre_b_noisy;
 	u32			noisy_decision_smooth;
 	boolean			is_disable_dym_ecs;
+    boolean		    bhtstfdisabled;		/* for dynamic HTSTF gain control	*/
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_CE | ODM_WIN))
 	struct _ODM_NOISE_MONITOR_ noise_level;
@@ -921,6 +931,7 @@ enum phy_reg_pg_type {
 	struct _odm_phy_dbg_info_	 phy_dbg_info;
 
 	/*ODM Structure*/
+    struct _DFS_STATISTICS		dfs;
 #if (defined(CONFIG_PHYDM_ANTENNA_DIVERSITY))
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
 	struct _BF_DIV_COEX_					dm_bdc_table;
@@ -1077,6 +1088,7 @@ enum phydm_structure_type {
 	PHYDM_FALSEALMCNT,
 	PHYDM_CFOTRACK,
 	PHYDM_ADAPTIVITY,
+	PHYDM_DFS,
 	PHYDM_ROMINFO,
 
 };
@@ -1130,10 +1142,6 @@ enum rt_status {
 	RT_STATUS_OS_API_FAILED,
 };
 #endif	/*end of enum rt_status definition*/
-
-#ifdef REMOVE_PACK
-	#pragma pack()
-#endif
 
 /*===========================================================*/
 /*AGC RX High Power mode*/
@@ -1233,6 +1241,19 @@ void
 odm_dm_reset(
 	struct PHY_DM_STRUCT	*p_dm_odm
 );
+
+void
+phydm_fwoffload_ability_init(
+	struct PHY_DM_STRUCT		*p_dm_odm,
+	enum phydm_offload_ability	offload_ability
+);
+
+void
+phydm_fwoffload_ability_clear(
+	struct PHY_DM_STRUCT		*p_dm_odm,
+	enum phydm_offload_ability	offload_ability
+);
+
 
 void
 phydm_support_ability_debug(
@@ -1468,6 +1489,11 @@ phydm_nbi_setting(
 void
 phydm_dc_cancellation(
 	struct PHY_DM_STRUCT	*p_dm_odm
+);
+
+void
+phydm_receiver_blocking(
+	void *p_dm_void
 );
 
 #endif

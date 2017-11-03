@@ -540,7 +540,7 @@ get_swing_index(
 	u32			*p_swing_table;
 
 	if (p_dm_odm->support_ic_type == ODM_RTL8188E || p_dm_odm->support_ic_type == ODM_RTL8723B
-	    || p_dm_odm->support_ic_type == ODM_RTL8192E || p_dm_odm->support_ic_type == ODM_RTL8188F || p_dm_odm->support_ic_type == ODM_RTL8703B
+	    || p_dm_odm->support_ic_type == ODM_RTL8192E || p_dm_odm->support_ic_type == ODM_RTL8188F || p_dm_odm->support_ic_type == ODM_RTL8703B  || p_dm_odm->support_ic_type == ODM_RTL8723D || p_dm_odm->support_ic_type == ODM_RTL8710B
 	   ) {
 		bb_swing = odm_get_bb_reg(p_dm_odm, REG_OFDM_0_XA_TX_IQ_IMBALANCE, 0xFFC00000);
 
@@ -572,6 +572,37 @@ get_swing_index(
 	return i;
 }
 
+u8
+get_cck_swing_index(
+	void		*p_dm_void
+)
+{
+	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
+
+	u8			i = 0;
+	u32			bb_cck_swing;
+
+	if (p_dm_odm->support_ic_type == ODM_RTL8188E || p_dm_odm->support_ic_type == ODM_RTL8723B ||
+	    p_dm_odm->support_ic_type == ODM_RTL8192E) {
+		bb_cck_swing = odm_read_1byte(p_dm_odm, 0xa22);
+
+		for (i = 0; i < CCK_TABLE_SIZE; i++) {
+			if (bb_cck_swing == cck_swing_table_ch1_ch13_new[i][0])
+				break;
+		}
+	} else if (p_dm_odm->support_ic_type == ODM_RTL8703B) {
+		bb_cck_swing = odm_read_1byte(p_dm_odm, 0xa22);
+
+		for (i = 0; i < CCK_TABLE_SIZE_88F; i++) {
+			if (bb_cck_swing == cck_swing_table_ch1_ch14_88f[i][0])
+				break;
+		}
+	}
+
+	return i;
+}
+
+
 void
 odm_txpowertracking_thermal_meter_init(
 	void	*p_dm_void
@@ -579,6 +610,7 @@ odm_txpowertracking_thermal_meter_init(
 {
 	struct PHY_DM_STRUCT		*p_dm_odm = (struct PHY_DM_STRUCT *)p_dm_void;
 	u8 default_swing_index = get_swing_index(p_dm_odm);
+	u8 default_cck_swing_index = get_cck_swing_index(p_dm_odm);
 	u8			p = 0;
 	struct odm_rf_calibration_structure	*p_rf_calibrate_info = &(p_dm_odm->rf_calibrate_info);
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -637,7 +669,7 @@ odm_txpowertracking_thermal_meter_init(
 		if (p_dm_odm->support_ic_type == ODM_RTL8188E || p_dm_odm->support_ic_type == ODM_RTL8723B ||
 		    p_dm_odm->support_ic_type == ODM_RTL8192E || p_dm_odm->support_ic_type == ODM_RTL8703B) {
 			p_rf_calibrate_info->default_ofdm_index = (default_swing_index >= OFDM_TABLE_SIZE) ? 30 : default_swing_index;
-			p_rf_calibrate_info->default_cck_index = 20;
+			p_rf_calibrate_info->default_cck_index = (default_cck_swing_index >= CCK_TABLE_SIZE) ? 20 : default_cck_swing_index;
 		} else if (p_dm_odm->support_ic_type == ODM_RTL8188F) {          /*add by Mingzhi.Guo  2015-03-23*/
 			p_rf_calibrate_info->default_ofdm_index = 28;							/*OFDM: -1dB*/
 			p_rf_calibrate_info->default_cck_index = 20;							/*CCK:-6dB*/

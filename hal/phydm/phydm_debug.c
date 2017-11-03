@@ -1560,6 +1560,7 @@ void phydm_basic_profile(
 	PHYDM_SNPRINTF((output + used, out_len - used, "  %-35s: %s\n", "path Diversity", PATHDIV_VERSION));
 	PHYDM_SNPRINTF((output + used, out_len - used, "  %-35s: %s\n", "LA mode", DYNAMIC_LA_MODE));
 	PHYDM_SNPRINTF((output + used, out_len - used, "  %-35s: %s\n", "Dynamic RX path", DYNAMIC_RX_PATH_VERSION));
+	PHYDM_SNPRINTF((output + used, out_len - used, "  %-35s: %s\n", "DFS", DFS_VERSION));
 
 #if (RTL8822B_SUPPORT == 1)
 	if (p_dm_odm->support_ic_type & ODM_RTL8822B)
@@ -2223,7 +2224,7 @@ enum PHYDM_CMD_ID {
 	PHYDM_SHOW_RXRATE,
 	PHYDM_NBI_EN,
 	PHYDM_CSI_MASK_EN,
-	PHYDM_DFS,
+	PHYDM_DFS_DEBUG,
 	PHYDM_IQK,
 	PHYDM_NHM,
 	PHYDM_CLM,
@@ -2235,7 +2236,7 @@ enum PHYDM_CMD_ID {
 	PHYDM_DYNAMIC_RA_PATH,
 	PHYDM_PSD,
 	PHYDM_DEBUG_PORT,
-	PHYDM_HTSTF_CONTROL,
+	PHYDM_DIS_HTSTF_CONTROL,
 	PHYDM_TUNE_PARAMETER,
 	PHYDM_ADAPTIVITY_DEBUG
 };
@@ -2263,7 +2264,7 @@ struct _PHYDM_COMMAND phy_dm_ary[] = {
 	{"rxrate", PHYDM_SHOW_RXRATE},
 	{"nbi", PHYDM_NBI_EN},
 	{"csi_mask", PHYDM_CSI_MASK_EN},
-	{"dfs", PHYDM_DFS},
+	{"dfs", PHYDM_DFS_DEBUG},
 	{"iqk", PHYDM_IQK},
 	{"nhm", PHYDM_NHM},
 	{"clm", PHYDM_CLM},
@@ -2275,7 +2276,7 @@ struct _PHYDM_COMMAND phy_dm_ary[] = {
 	{"drp", PHYDM_DYNAMIC_RA_PATH},
 	{"psd", PHYDM_PSD},
 	{"dbgport", PHYDM_DEBUG_PORT},
-	{"htstf", PHYDM_HTSTF_CONTROL},
+	{"dis_htstf", PHYDM_DIS_HTSTF_CONTROL},
 	{"tune_para", PHYDM_TUNE_PARAMETER},
 	{"adapt_debug", PHYDM_ADAPTIVITY_DEBUG}
 };
@@ -2702,12 +2703,12 @@ phydm_cmd_parser(
 
 		break;
 
-	case PHYDM_DFS:
-#if (DM_ODM_SUPPORT_TYPE & ODM_CE)
+	case PHYDM_DFS_DEBUG:
+#ifdef CONFIG_PHYDM_DFS_MASTER
 		{
-			u32 var[6] = {0};
+			u32 var[4] = {0};
 
-			for (i = 0; i < 6; i++) {
+			for (i = 0; i < 4; i++) {
 				if (input[i + 1]) {
 					PHYDM_SSCANF(input[i + 1], DCMD_HEX, &var[i]);
 					input_idx++;
@@ -3021,19 +3022,22 @@ phydm_cmd_parser(
 		}
 		break;
 		
-	case PHYDM_HTSTF_CONTROL:
+	case PHYDM_DIS_HTSTF_CONTROL:
 		{
 			if (input[1])
 				PHYDM_SSCANF(input[1], DCMD_DECIMAL, &var1[0]);
 
 			if (var1[0] == 1) {
-				/* phydm_dynamic_switch_htstf_mumimo_8822b(p_dm_odm);*/
-				p_dm_odm->bhtstfenabled = TRUE;
-				PHYDM_SNPRINTF((output + used, out_len - used, "Dynamic HT-STF Gain Control is Enable\n"));
+				
+				/* setting being false is for debug */
+				p_dm_odm->bhtstfdisabled = true;
+				PHYDM_SNPRINTF((output + used, out_len - used, "Dynamic HT-STF Gain Control is Disable\n"));
 			}
 			else {
-				p_dm_odm->bhtstfenabled = FALSE;
-				PHYDM_SNPRINTF((output + used, out_len - used, "Dynamic HT-STF Gain Control is Disable\n"));
+				
+				/* default setting should be true, always be dynamic control*/
+				p_dm_odm->bhtstfdisabled = false;
+				PHYDM_SNPRINTF((output + used, out_len - used, "Dynamic HT-STF Gain Control is Enable\n"));
 			}
 		}
 		break;

@@ -903,7 +903,7 @@ struct dvobj_priv {
 
 #ifdef CONFIG_AP_MODE
 	u8 nr_ap_if; /* total interface s number of ap/go mode. */
-	u32 inter_bcn_space; /* unit:ms */
+	u16 inter_bcn_space; /* unit:ms */
 	_queue	ap_if_q;
 #endif
 

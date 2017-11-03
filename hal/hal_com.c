@@ -3850,7 +3850,7 @@ static void rtw_hal_update_gtk_offload_info(_adapter *adapter)
 	struct cam_ctl_t *cam_ctl = &dvobj->cam_ctl;
 	_irqL irqL;
 	u8 get_key[16];
-	u8 gtk_id = 0, offset = 0;
+	u8 gtk_id = 0, offset = 0, i = 0, sz = 0;
 	u64 replay_count = 0;
 
 	if (check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE)
@@ -3903,6 +3903,12 @@ static void rtw_hal_update_gtk_offload_info(_adapter *adapter)
 				&psecuritypriv->dot118021XGrprxmickey[gtk_id],
 				&(paoac_rpt->group_key[offset]),
 				RTW_TKIP_MIC_LEN);
+		}
+		/* Update broadcast RX IV */
+		if (psecuritypriv->dot118021XGrpPrivacy == _AES_) {
+			sz = sizeof(psecuritypriv->iv_seq[0]);
+			for (i = 0 ; i < 4 ; i++)
+				_rtw_memset(psecuritypriv->iv_seq[i], 0, sz);
 		}
 
 		RTW_PRINT("GTK (%d) "KEY_FMT"\n", gtk_id,
@@ -10499,13 +10505,22 @@ void rtw_set_usb_agg_by_mode_normal(_adapter *padapter, u8 cur_wireless_mode)
 				pHalData->rxagg_usb_timeout = 0x10;
 			}
 		}
+		rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
+			pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
 #else /* !CONFIG_PREALLOC_RX_SKB_BUFFER */
-		if (0x6 != pHalData->rxagg_usb_size || 0x10 != pHalData->rxagg_usb_timeout) {
-			pHalData->rxagg_usb_size = 0x6;
-			pHalData->rxagg_usb_timeout = 0x10;
+	#if defined(CONFIG_PLATFORM_HISILICON)
+		pHalData->rxagg_usb_size = 3;
+		pHalData->rxagg_usb_timeout = 8;
+		rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
+			pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
+	#else
+		if ((0x5 != pHalData->rxagg_usb_size) || (0x20 != pHalData->rxagg_usb_timeout)) {
+			pHalData->rxagg_usb_size = 0x5;
+			pHalData->rxagg_usb_timeout = 0x20;
 			rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
 				pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
 		}
+	#endif
 #endif /* CONFIG_PREALLOC_RX_SKB_BUFFER */
 
 	} else if (cur_wireless_mode >= WIRELESS_11_24N
@@ -10529,13 +10544,22 @@ void rtw_set_usb_agg_by_mode_normal(_adapter *padapter, u8 cur_wireless_mode)
 				pHalData->rxagg_usb_timeout = 0x10;
 			}
 		}
+		rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
+			pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
 #else /* !CONFIG_PREALLOC_RX_SKB_BUFFER */
+	#if defined(CONFIG_PLATFORM_HISILICON)
+		pHalData->rxagg_usb_size = 3;
+		pHalData->rxagg_usb_timeout = 8;
+		rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
+			pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
+	#else
 		if ((0x5 != pHalData->rxagg_usb_size) || (0x20 != pHalData->rxagg_usb_timeout)) {
 			pHalData->rxagg_usb_size = 0x5;
 			pHalData->rxagg_usb_timeout = 0x20;
 			rtw_write16(padapter, REG_RXDMA_AGG_PG_TH,
 				pHalData->rxagg_usb_size | (pHalData->rxagg_usb_timeout << 8));
 		}
+	#endif
 #endif /* CONFIG_PREALLOC_RX_SKB_BUFFER */
 
 	} else {

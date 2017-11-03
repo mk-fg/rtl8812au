@@ -93,17 +93,20 @@ phydm_rx_statistic_cal(
 		if ((p_phy_sta_rpt->gid != 0) && (p_phy_sta_rpt->gid != 63) && (p_phydm->support_ic_type & ODM_IC_PHY_STATUE_NEW_TYPE)) {
 
 			p_phydm->phy_dbg_info.num_qry_mu_vht_pkt[date_rate - ODM_RATEVHTSS1MCS0]++;
-			p_phydm->phy_dbg_info.num_of_ppdu[p_pktinfo->ppdu_cnt] = date_rate | BIT(7);
-			p_phydm->phy_dbg_info.gid_num[p_pktinfo->ppdu_cnt] = p_phy_sta_rpt->gid;
-			
+			if (p_pktinfo->ppdu_cnt < 4) {
+				p_phydm->phy_dbg_info.num_of_ppdu[p_pktinfo->ppdu_cnt] = date_rate | BIT(7);
+				p_phydm->phy_dbg_info.gid_num[p_pktinfo->ppdu_cnt] = p_phy_sta_rpt->gid;
+			}
 		} else 
 		#endif
 		{
 			p_phydm->phy_dbg_info.num_qry_vht_pkt[date_rate - ODM_RATEVHTSS1MCS0]++;
 			p_phydm->phy_dbg_info.vht_pkt_not_zero = true;
 			#if (ODM_PHY_STATUS_NEW_TYPE_SUPPORT == 1)
-			p_phydm->phy_dbg_info.num_of_ppdu[p_pktinfo->ppdu_cnt] = date_rate;
-			p_phydm->phy_dbg_info.gid_num[p_pktinfo->ppdu_cnt] = p_phy_sta_rpt->gid;
+			if (p_pktinfo->ppdu_cnt < 4) {
+				p_phydm->phy_dbg_info.num_of_ppdu[p_pktinfo->ppdu_cnt] = date_rate;
+				p_phydm->phy_dbg_info.gid_num[p_pktinfo->ppdu_cnt] = p_phy_sta_rpt->gid;
+			}
 			#endif
 		}
 	}
@@ -2145,11 +2148,12 @@ odm_config_rf_with_header_file(
 	struct _ADAPTER		*adapter = p_dm_odm->adapter;
 	PMGNT_INFO		p_mgnt_info = &(adapter->MgntInfo);
 #endif
+	enum hal_status	result = HAL_STATUS_SUCCESS;
 
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
 		("===>odm_config_rf_with_header_file (%s)\n", (p_dm_odm->is_mp_chip) ? "MPChip" : "TestChip"));
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
-		("p_dm_odm->support_platform: 0x%X, p_dm_odm->support_interface: 0x%X, p_dm_odm->board_type: 0x%X\n",
+		("support_platform: 0x%X, support_interface: 0x%X, board_type: 0x%X\n",
 		p_dm_odm->support_platform, p_dm_odm->support_interface, p_dm_odm->board_type));
 
 	/* 1 AP doesn't use PHYDM power tracking table in these ICs */
@@ -2342,7 +2346,22 @@ odm_config_rf_with_header_file(
 	}
 #endif
 
-	return HAL_STATUS_SUCCESS;
+	if (config_type == CONFIG_RF_RADIO) {
+		if (p_dm_odm->fw_offload_ability & PHYDM_PHY_PARAM_OFFLOAD) {
+
+			result = phydm_set_reg_by_fw(p_dm_odm,
+							PHYDM_HALMAC_CMD_END,
+							0,
+							0,
+							0,
+							(enum odm_rf_radio_path_e)0,
+							0);
+			ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
+				("rf param offload end!result = %d", result));
+		}
+	}
+
+	return result;
 }
 
 enum hal_status
@@ -2547,6 +2566,7 @@ odm_config_bb_with_header_file(
 	struct _ADAPTER		*adapter = p_dm_odm->adapter;
 	PMGNT_INFO		p_mgnt_info = &(adapter->MgntInfo);
 #endif
+	enum hal_status	result = HAL_STATUS_SUCCESS;
 
 	/* 1 AP doesn't use PHYDM initialization in these ICs */
 #if (DM_ODM_SUPPORT_TYPE != ODM_AP)
@@ -2578,13 +2598,13 @@ odm_config_bb_with_header_file(
 		} else if (config_type == CONFIG_BB_PHY_REG_MP)
 			READ_AND_CONFIG_MP(8812a, _phy_reg_mp);
 		else if (config_type == CONFIG_BB_AGC_TAB_DIFF) {
+			p_dm_odm->fw_offload_ability &= ~PHYDM_PHY_PARAM_OFFLOAD;
+			/*AGC_TAB DIFF dont support FW offload*/
 			if ((36 <= *p_dm_odm->p_channel)  && (*p_dm_odm->p_channel  <= 64))
 				AGC_DIFF_CONFIG_MP(8812a, lb);
 			else if (100 <= *p_dm_odm->p_channel)
 				AGC_DIFF_CONFIG_MP(8812a, hb);
 		}
-		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, (" ===> phy_ConfigBBWithHeaderFile() phy:Rtl8812AGCTABArray\n"));
-		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, (" ===> phy_ConfigBBWithHeaderFile() agc:Rtl8812PHY_REGArray\n"));
 	}
 #endif
 #if (RTL8821A_SUPPORT == 1)
@@ -2606,7 +2626,7 @@ odm_config_bb_with_header_file(
 				/*{1827}{1022} for BUFFALO power by rate table. Isaiah 2013-10-18*/
 				if (p_mgnt_info->CustomerID == RT_CID_DNI_BUFFALO) {
 					/*{1024} for BUFFALO power by rate table. (JP/US)*/
-					if (p_mgnt_info->channel_plan == RT_CHANNEL_DOMAIN_US_2G_CANADA_5G)
+					if (p_mgnt_info->ChannelPlan == RT_CHANNEL_DOMAIN_US_2G_CANADA_5G)
 						READ_AND_CONFIG_MP(8821a, _phy_reg_pg_dni_us);
 					else
 						READ_AND_CONFIG_MP(8821a, _phy_reg_pg_dni_jp);
@@ -2615,8 +2635,6 @@ odm_config_bb_with_header_file(
 #endif
 					READ_AND_CONFIG_MP(8821a, _phy_reg_pg);
 		}
-		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, (" ===> phy_ConfigBBWithHeaderFile() phy:Rtl8821AGCTABArray\n"));
-		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, (" ===> phy_ConfigBBWithHeaderFile() agc:Rtl8821PHY_REGArray\n"));
 	}
 #endif
 #if (RTL8192E_SUPPORT == 1)
@@ -2729,8 +2747,6 @@ odm_config_bb_with_header_file(
 			READ_AND_CONFIG_MP(8822b, _agc_tab);
 		else if (config_type == CONFIG_BB_PHY_REG_PG)
 			READ_AND_CONFIG_MP(8822b, _phy_reg_pg);
-		/*else if (config_type == CONFIG_BB_PHY_REG_MP)*/
-		/*READ_AND_CONFIG_MP(8822b, _phy_reg_mp);*/
 	}
 #endif
 
@@ -2742,10 +2758,6 @@ odm_config_bb_with_header_file(
 				phydm_phypara_a_cut(p_dm_odm);
 		} else if (config_type == CONFIG_BB_AGC_TAB)
 			READ_AND_CONFIG_MP(8197f, _agc_tab);
-		/*		else if(config_type == CONFIG_BB_PHY_REG_PG)
-					READ_AND_CONFIG_MP(8197f, _phy_reg_pg);
-				else if(config_type == CONFIG_BB_PHY_REG_MP)
-					READ_AND_CONFIG_MP(8197f, _phy_reg_mp); */
 	}
 #endif
 
@@ -2761,6 +2773,8 @@ odm_config_bb_with_header_file(
 		} else if (config_type == CONFIG_BB_PHY_REG_PG)
 			READ_AND_CONFIG(8821c, _phy_reg_pg);
 		else if (config_type == CONFIG_BB_AGC_TAB_DIFF) {
+			p_dm_odm->fw_offload_ability &= ~PHYDM_PHY_PARAM_OFFLOAD;
+			/*AGC_TAB DIFF dont support FW offload*/
 			if (p_dm_odm->current_rf_set_8821c == SWITCH_TO_BTG)
 				AGC_DIFF_CONFIG_MP(8821c, btg);
 			else if (p_dm_odm->current_rf_set_8821c == SWITCH_TO_WLG)
@@ -2780,7 +2794,21 @@ odm_config_bb_with_header_file(
 	}
 #endif
 
-	return HAL_STATUS_SUCCESS;
+	if (config_type == CONFIG_BB_PHY_REG || config_type == CONFIG_BB_AGC_TAB)
+		if (p_dm_odm->fw_offload_ability & PHYDM_PHY_PARAM_OFFLOAD) {
+
+			result = phydm_set_reg_by_fw(p_dm_odm,
+								PHYDM_HALMAC_CMD_END,
+								0,
+								0,
+								0,
+								(enum odm_rf_radio_path_e)0,
+								0);
+			ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
+				("phy param offload end!result = %d", result));
+		}
+
+	return result;
 }
 
 enum hal_status
@@ -2788,14 +2816,11 @@ odm_config_mac_with_header_file(
 	struct PHY_DM_STRUCT	*p_dm_odm
 )
 {
-#if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	struct _ADAPTER		*adapter = p_dm_odm->adapter;
-#endif
-
+	enum hal_status	result = HAL_STATUS_SUCCESS;
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
 		("===>odm_config_mac_with_header_file (%s)\n", (p_dm_odm->is_mp_chip) ? "MPChip" : "TestChip"));
 	ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
-		("p_dm_odm->support_platform: 0x%X, p_dm_odm->support_interface: 0x%X, p_dm_odm->board_type: 0x%X\n",
+		("support_platform: 0x%X, support_interface: 0x%X, board_type: 0x%X\n",
 		p_dm_odm->support_platform, p_dm_odm->support_interface, p_dm_odm->board_type));
 
 	/* 1 AP doesn't use PHYDM initialization in these ICs */
@@ -2805,11 +2830,8 @@ odm_config_mac_with_header_file(
 		READ_AND_CONFIG_MP(8812a, _mac_reg);
 #endif
 #if (RTL8821A_SUPPORT == 1)
-	if (p_dm_odm->support_ic_type == ODM_RTL8821) {
+	if (p_dm_odm->support_ic_type == ODM_RTL8821)
 		READ_AND_CONFIG_MP(8821a, _mac_reg);
-
-		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("<===8821_ODM_ConfigMACwithHeaderFile\n"));
-	}
 #endif
 #if (RTL8192E_SUPPORT == 1)
 	if (p_dm_odm->support_ic_type == ODM_RTL8192E)
@@ -2868,7 +2890,20 @@ odm_config_mac_with_header_file(
 		READ_AND_CONFIG_MP(8195a, _mac_reg);
 #endif
 
-	return HAL_STATUS_SUCCESS;
+	if (p_dm_odm->fw_offload_ability & PHYDM_PHY_PARAM_OFFLOAD) {
+
+		result = phydm_set_reg_by_fw(p_dm_odm,
+							PHYDM_HALMAC_CMD_END,
+							0,
+							0,
+							0,
+							(enum odm_rf_radio_path_e)0,
+							0);
+		ODM_RT_TRACE(p_dm_odm, ODM_COMP_INIT, ODM_DBG_LOUD,
+			("mac param offload end!result = %d", result));
+	}
+
+	return result;
 }
 
 enum hal_status
@@ -2990,20 +3025,6 @@ odm_config_fw_with_header_file(
 			}
 		}
 #endif
-
-	/*#if (RTL8814A_SUPPORT == 1)
-		if (p_dm_odm->support_ic_type == ODM_RTL8814A)
-		{
-			if (config_type == CONFIG_FW_NIC)
-				READ_FIRMWARE_MP(8814a, _fw_nic);
-			else if (config_type == config_fw_wowlan)
-				READ_FIRMWARE_MP(8814a, _fw_wowlan);
-			#ifdef CONFIG_AP_WOWLAN
-			else if (config_type == config_fw_ap_wowlan)
-				READ_FIRMWARE_MP(8814a, _fw_ap);
-			#endif
-		}
-	#endif */
 
 #if (RTL8814A_SUPPORT == 1)
 	if (p_dm_odm->support_ic_type == ODM_RTL8814A) {
@@ -3334,9 +3355,10 @@ phydm_get_rx_phy_status_type0(
 		rx_power = p_phy_sta_rpt->pwdb - 97;
 #endif
 	}
+/* RTL8710B do not need recalculate the offset By James Liao@20170527 */    
 #if (RTL8710B_SUPPORT == 1)
-	else if (p_dm_odm->support_ic_type & ODM_RTL8710B)
-		rx_power = p_phy_sta_rpt->pwdb - 97;
+	//else if (p_dm_odm->support_ic_type & ODM_RTL8710B)
+		//rx_power = p_phy_sta_rpt->pwdb - 97;
 #endif
 
 #if (RTL8821C_SUPPORT == 1)

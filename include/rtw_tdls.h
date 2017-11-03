@@ -111,6 +111,7 @@ u8 rtw_tdls_is_chsw_allowed(_adapter *padapter);
 void rtw_reset_tdls_info(_adapter *padapter);
 int rtw_init_tdls_info(_adapter *padapter);
 void rtw_free_tdls_info(struct tdls_info *ptdlsinfo);
+void rtw_free_all_tdls_sta(_adapter *padapter, u8 from_cmd_thread);
 int issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsigned int power_mode, int try_cnt, int wait_ms);
 void rtw_init_tdls_timer(_adapter *padapter, struct sta_info *psta);
 void	rtw_free_tdls_timer(struct sta_info *psta);

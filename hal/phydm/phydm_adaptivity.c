@@ -788,7 +788,7 @@ phydm_adaptivity(
 	struct _ADAPTIVITY_STATISTICS	*adaptivity = (struct _ADAPTIVITY_STATISTICS *)phydm_get_structure(p_dm_odm, PHYDM_ADAPTIVITY);
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	struct _ADAPTER		*p_adapter	= p_dm_odm->adapter;
-	boolean			is_fw_current_in_ps_mode = false;
+	u32			is_fw_current_in_ps_mode = false;
 	u8			disable_ap_adapt_setting;
 
 	p_adapter->HalFunc.GetHwRegHandler(p_adapter, HW_VAR_FW_PSMODE_STATUS, (u8 *)(&is_fw_current_in_ps_mode));

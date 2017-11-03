@@ -62,6 +62,8 @@ void rtw_reset_tdls_info(_adapter *padapter)
 #ifdef CONFIG_WFD
 	ptdlsinfo->wfd_info = &padapter->wfd_info;
 #endif
+
+	ptdlsinfo->tdls_sctx = NULL;
 }
 
 int rtw_init_tdls_info(_adapter *padapter)
@@ -92,6 +94,62 @@ void rtw_free_tdls_info(struct tdls_info *ptdlsinfo)
 
 	_rtw_memset(ptdlsinfo, 0, sizeof(struct tdls_info));
 
+}
+
+void rtw_free_all_tdls_sta(_adapter *padapter, u8 from_cmd_thread)
+{
+	struct sta_priv *pstapriv = &padapter->stapriv;
+	struct tdls_info *ptdlsinfo = &padapter->tdlsinfo;
+	_irqL	 irqL;
+	_list	*plist, *phead;
+	s32	index;
+	struct sta_info *psta = NULL;
+	u8 tdls_sta[NUM_STA][ETH_ALEN];
+	u8 empty_hwaddr[ETH_ALEN] = { 0x00 };
+	struct submit_ctx sctx;
+
+	_rtw_memset(tdls_sta, 0x00, sizeof(tdls_sta));
+
+	_enter_critical_bh(&pstapriv->sta_hash_lock, &irqL);
+	for (index = 0; index < NUM_STA; index++) {
+		phead = &(pstapriv->sta_hash[index]);
+		plist = get_next(phead);
+
+		while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
+
+			plist = get_next(plist);
+
+			if (psta->tdls_sta_state != TDLS_STATE_NONE)
+				_rtw_memcpy(tdls_sta[index], psta->hwaddr, ETH_ALEN);
+		}
+	}
+	_exit_critical_bh(&pstapriv->sta_hash_lock, &irqL);
+
+	for (index = 0; index < NUM_STA; index++) {
+		if (!_rtw_memcmp(tdls_sta[index], empty_hwaddr, ETH_ALEN)) {
+			RTW_INFO("issue tear down to "MAC_FMT" by from_cmd_thread = %d\n", MAC_ARG(tdls_sta[index]), from_cmd_thread);
+
+			if (from_cmd_thread == _TRUE) {
+				struct TDLSoption_param tdls_param;
+
+				_rtw_memcpy(&(tdls_param.addr), tdls_sta[index], ETH_ALEN);
+
+				tdls_param.option = TDLS_TEARDOWN_STA;
+				tdls_hdl(padapter, (unsigned char *)&(tdls_param));
+
+				tdls_param.option = TDLS_TEARDOWN_STA_LOCALLY;
+				tdls_hdl(padapter, (unsigned char *)&(tdls_param));
+			} else {
+				if (rtw_tdls_cmd(padapter, tdls_sta[index], TDLS_TEARDOWN_STA) == _SUCCESS) {
+					ptdlsinfo->tdls_sctx = &sctx;
+					rtw_sctx_init(ptdlsinfo->tdls_sctx, 1000);
+					rtw_sctx_wait(ptdlsinfo->tdls_sctx, __func__);
+					ptdlsinfo->tdls_sctx = NULL;
+				}
+			}
+		}
+	}
 }
 
 int check_ap_tdls_prohibited(u8 *pframe, u8 pkt_len)
@@ -125,6 +183,9 @@ int check_ap_tdls_ch_switching_prohibited(u8 *pframe, u8 pkt_len)
 u8 rtw_tdls_is_setup_allowed(_adapter *padapter)
 {
 	struct tdls_info *ptdlsinfo = &padapter->tdlsinfo;
+
+	if (is_client_associated_to_ap(padapter) == _FALSE)
+		return _FALSE;
 
 	if (ptdlsinfo->ap_prohibited == _TRUE)
 		return _FALSE;

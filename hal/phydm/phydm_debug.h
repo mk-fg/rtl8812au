@@ -156,6 +156,15 @@
 #endif
 
 #if DBG
+#define PHYDM_DBG(p_dm, comp, fmt)				\
+	do {													\
+		if ((comp) & (p_dm->debug_components)) {	\
+														\
+			dbg_print("[PHYDM] ");						\
+			RT_PRINTK fmt;								\
+		}												\
+	} while (0)
+
 #define ODM_RT_TRACE(p_dm_odm, comp, level, fmt)									\
 	do {	\
 		if (((comp) & p_dm_odm->debug_components) && (level <= p_dm_odm->debug_level || level == ODM_DBG_SERIOUS)) { \
@@ -216,6 +225,7 @@
 	} while (0)
 
 #else
+#define PHYDM_DBG(p_dm, comp, fmt)
 #define ODM_RT_TRACE(p_dm_odm, comp, level, fmt)
 #define ODM_RT_TRACE_F(p_dm_odm, comp, level, fmt)
 #define ODM_RT_ASSERT(p_dm_odm, expr, fmt)

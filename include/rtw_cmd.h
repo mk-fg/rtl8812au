@@ -245,6 +245,7 @@ enum rtw_drvextra_cmd_id {
 	TEST_H2C_CID,
 	MP_CMD_WK_CID,
 	CUSTOMER_STR_WK_CID,
+	SET_SECURITYPRIV,
 	MAX_WK_CID
 };
 
@@ -1029,7 +1030,7 @@ extern u8 rtw_dynamic_chk_wk_cmd(_adapter *adapter);
 u8 rtw_lps_ctrl_wk_cmd(_adapter *padapter, u8 lps_ctrl_type, u8 enqueue);
 u8 rtw_dm_in_lps_wk_cmd(_adapter *padapter);
 u8 rtw_lps_change_dtim_cmd(_adapter *padapter, u8 dtim);
-
+u8 rtw_set_securitypriv_cmd(_adapter *padapter, u8 *sme);
 #if (RATE_ADAPTIVE_SUPPORT == 1)
 u8 rtw_rpt_timer_cfg_cmd(_adapter *padapter, u16 minRptTime);
 #endif

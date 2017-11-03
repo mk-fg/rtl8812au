@@ -29,6 +29,8 @@
 			#ifndef CONFIG_MINIMAL_MEMORY_USAGE
 				#ifdef CONFIG_PREALLOC_RX_SKB_BUFFER
 					#define MAX_RECVBUF_SZ (rtw_rtkm_get_buff_size()) /*depend rtkm*/
+				#elif defined(CONFIG_PLATFORM_HISILICON) && defined(CONFIG_RTL8812A)
+					#define MAX_RECVBUF_SZ (16384) /* 16k */
 				#else
 					#define MAX_RECVBUF_SZ (32768)  /*32k*/
 				#endif

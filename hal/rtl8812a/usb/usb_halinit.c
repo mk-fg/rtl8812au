@@ -165,8 +165,14 @@ void rtl8812au_interface_configure(_adapter *padapter)
 			}
 		}
 #else /* !CONFIG_PREALLOC_RX_SKB_BUFFER */
-		pHalData->rxagg_usb_size = 0x5;
-		pHalData->rxagg_usb_timeout = 0x20;
+#if defined(CONFIG_PLATFORM_HISILICON) && defined(CONFIG_RTL8812A)
+		pHalData->rxagg_usb_size = 3; /*unit 4k for USB aggregation mode */
+		pHalData->rxagg_usb_timeout = 8; /*unit 32us*/
+
+#else
+		pHalData->rxagg_usb_size = 6; /* unit 4k for USB aggregation mode */
+		pHalData->rxagg_usb_timeout = 0x20; /* unit 32us */
+#endif	/* CONFIG_PLATFORM_HISILICON */
 #endif /* CONFIG_PREALLOC_RX_SKB_BUFFER */
 
 	}
