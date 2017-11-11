@@ -350,7 +350,7 @@
 /* #define DBG_XMIT_BUF */
 /* #define DBG_XMIT_BUF_EXT */
 /* #define DBG_TX_DROP_FRAME */
-#define DBG_TX_POWER_IDX 1
+/* #define DBG_TX_POWER_IDX */
 
 /* #define DBG_RX_DROP_FRAME */
 /* #define DBG_RX_SEQ */
