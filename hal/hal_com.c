@@ -1253,7 +1253,7 @@ void rtw_hal_c2h_pkt_pre_hdl(_adapter *adapter, u8 *buf, u16 len)
 	}
 
 	hdl_here = rtw_hal_c2h_id_handle_directly(adapter, id, seq, plen, payload) == _TRUE ? 1 : 0;
-	if (hdl_here) 
+	if (hdl_here)
 		ret = rtw_hal_c2h_handler(adapter, id, seq, plen, payload);
 	else
 		ret = rtw_c2h_packet_wk_cmd(adapter, buf, len);
@@ -1560,7 +1560,7 @@ int c2h_defeature_dbg_hdl(_adapter *adapter, u8 *data, u8 len)
 		RTW_PRINT("%s: 0x%02X\n", __func__, *(data + i));
 
 	ret = _SUCCESS;
-	
+
 exit:
 	return ret;
 }
@@ -10258,18 +10258,17 @@ void rtw_dump_cur_efuse(PADAPTER padapter)
 	else
 		RTW_INFO("HW EFUSE\n");
 
-#ifdef CONFIG_RTW_DEBUG
-	for (i = 0; i < mapsize; i++) {
-		if (i % 16 == 0)
-			RTW_PRINT_SEL(RTW_DBGDUMP, "0x%03x: ", i);
-
-		_RTW_PRINT_SEL(RTW_DBGDUMP, "%02X%s"
-			, hal_data->efuse_eeprom_data[i]
-			, ((i + 1) % 16 == 0) ? "\n" : (((i + 1) % 8 == 0) ? "    " : " ")
-		);
-	}
-	_RTW_PRINT_SEL(RTW_DBGDUMP, "\n");
-#endif
+/* #ifdef CONFIG_RTW_DEBUG */
+/* 	for (i = 0; i < mapsize; i++) { */
+/* 		if (i % 16 == 0) */
+/* 			RTW_PRINT_SEL(RTW_DBGDUMP, "0x%03x: ", i); */
+/* 		_RTW_PRINT_SEL(RTW_DBGDUMP, "%02X%s" */
+/* 			, hal_data->efuse_eeprom_data[i] */
+/* 			, ((i + 1) % 16 == 0) ? "\n" : (((i + 1) % 8 == 0) ? "    " : " ") */
+/* 		); */
+/* 	} */
+/* 	_RTW_PRINT_SEL(RTW_DBGDUMP, "\n"); */
+/* #endif */
 }
 
 
@@ -10285,7 +10284,7 @@ u32 Hal_readPGDataFromConfigFile(PADAPTER padapter)
 	if (maplen < 256 || maplen > EEPROM_MAX_SIZE) {
 		RTW_ERR("eFuse length error :%d\n", maplen);
 		return _FALSE;
-	}	
+	}
 
 	ret = rtw_read_efuse_from_file(EFUSE_MAP_PATH, hal_data->efuse_eeprom_data, maplen);
 
@@ -11786,7 +11785,7 @@ void rtw_dump_phy_cap_by_hal(void *sel, _adapter *adapter)
 	phy_cap = _FALSE;
 	rtw_hal_get_def_var(adapter, HAL_DEF_RX_LDPC, (u8 *)&phy_cap);
 	RTW_PRINT_SEL(sel, "[HAL] LDPC Rx : %s\n\n", (_TRUE == phy_cap) ? "Supported" : "N/A");
-	
+
 	#ifdef CONFIG_BEAMFORMING
 	phy_cap = _FALSE;
 	rtw_hal_get_def_var(adapter, HAL_DEF_EXPLICIT_BEAMFORMER, (u8 *)&phy_cap);
@@ -11815,4 +11814,3 @@ void rtw_dump_phy_cap(void *sel, _adapter *adapter)
 	rtw_dump_phy_cap_by_hal(sel, adapter);
 #endif
 }
-
