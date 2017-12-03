@@ -3,8 +3,8 @@ rtl8812au
 
 Linux kernel driver for USB WiFi dongles based on Realtek rtl8812au chipset.
 
-This is a fork of gordboy/rtl8812au, which is based on 5.2.9 realtek driver
-version, obtained from ftp3.realtek.com.tw, as described here:
+This is a fork of gordboy/rtl8812au (no longer exists), which is based on 5.2.9.3
+realtek driver version, obtained from ftp3.realtek.com.tw, as described here:
 
 - https://github.com/astsam/rtl8812au/issues/51#issuecomment-315117972
 
@@ -14,9 +14,9 @@ info by default (can be disabled via module parameters) and override default
 txpower values (via rtw_tx_pwr_idx_override module option, see modinfo), plus a
 few other misc ad-hoc tweaks.
 
-Afaik 5.2.9 wasn't tested as extensively as older rtl8812au version
-(e.g. 5.1.5), but seem to have straightforward improvements and patches,
-so what can possibly go wrong? :)
+Afaik 5.2.9.3 wasn't tested as extensively as older rtl8812au version
+(e.g. 5.1.5), and have been augmented by various hacks here, so what can
+possibly go wrong? :)
 
 (see "old-5.1.5" branch here for when it does)
 
@@ -35,10 +35,11 @@ mainline 4.13.x+ kernel), see:
 
 - https://github.com/mk-fg/archlinux-pkgbuilds/blob/master/rtl8812au-5.2.9-odc2-git/PKGBUILD
 
-gordboy/rtl8812au repository has info and helper files for debian-based distros
-(e.g. ubuntu):
+More orthodox fork can be found in zebulon2/rtl8812au-driver-5.2.9, which should
+probably be picked instead of this one for any kind of general use, links:
 
-- https://github.com/gordboy/rtl8812au
+- Debian packages: https://github.com/zebulon2/rtl8812au-driver-5.2.9
+- Arch (AUR) package: https://aur.archlinux.org/packages/rtl8812au-dkms-git/
 
 
 Note on support / development / patches
@@ -163,7 +164,8 @@ Repositories that seem to be most active (as of April 2017) wrt info on this
 driver, i.e. places to watch for new issues, commits, pull requests and forks
 (in no particular order):
 
-- https://github.com/gordboy/rtl8812au/
+- https://github.com/zebulon2/rtl8812au-driver-5.2.9
+- https://github.com/gordboy/rtl8812au/ (gone!)
 - https://github.com/abperiasamy/rtl8812AU_8821AU_linux/
 - https://github.com/uminokoe/rtl8812AU/ (gone!)
 - https://github.com/diederikdehaas/rtl8812AU/
