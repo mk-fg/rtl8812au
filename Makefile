@@ -138,6 +138,7 @@ CONFIG_PLATFORM_ARM_SPREADTRUM_6820 = n
 CONFIG_PLATFORM_ARM_SPREADTRUM_8810 = n
 CONFIG_PLATFORM_ARM_WMT = n
 CONFIG_PLATFORM_ARM_RPI = n
+CONFIG_PLATFORM_ARM_ODROIDC2 = n
 CONFIG_PLATFORM_TI_DM365 = n
 CONFIG_PLATFORM_MOZART = n
 CONFIG_PLATFORM_RTK119X = n
@@ -175,12 +176,12 @@ CONFIG_RTL8814A = y
 endif
 
 ifeq ($(DEBUG), 1)
-EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5 
+EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5
 EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC
 else ifeq ($(DEBUG), 2)
 EXTRA_CFLAGS += -DDBG=1 -DCONFIG_RTW_DEBUG -DCONFIG_DBG_COUNTER -DRTW_LOG_LEVEL=5
-EXTRA_CFLAGS += -DCONFIG_DEBUG_RTL871X 
-EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC 
+EXTRA_CFLAGS += -DCONFIG_DEBUG_RTL871X
+EXTRA_CFLAGS += -DCONFIG_RADIOTAP_WITH_RXDESC
 else
 EXTRA_CFLAGS += -DDBG=0
 endif
@@ -226,7 +227,7 @@ _HAL_INTFS_FILES :=	hal/hal_intf.o \
 			hal/hal_hci/hal_$(HCI_NAME).o \
 			hal/led/hal_$(HCI_NAME)_led.o
 
-			
+
 _OUTSRC_FILES := hal/phydm/phydm_debug.o	\
 		hal/phydm/phydm_antdiv.o\
 		hal/phydm/phydm_antdect.o\
@@ -300,7 +301,7 @@ EXTRA_CFLAGS += -DCONFIG_RTL8188E
 
 _HAL_INTFS_FILES +=	hal/HalPwrSeqCmd.o \
 					hal/$(RTL871X)/Hal8188EPwrSeq.o\
- 					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+					hal/$(RTL871X)/$(RTL871X)_xmit.o\
 					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
 _HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
@@ -517,7 +518,7 @@ _OUTSRC_FILES += hal/phydm/rtl8821a/halhwimg8821a_fw.o\
 		hal/phydm/rtl8821a/phydm_rtl8821a.o\
 		hal/phydm/rtl8821a/phydm_iqk_8821a_ce.o\
 		hal/phydm/txbf/haltxbfjaguar.o
-		
+
 endif
 
 endif
@@ -609,7 +610,7 @@ _HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
 			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
 			hal/$(RTL871X)/$(RTL871X)_dm.o \
 			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
-			hal/$(RTL871X)/$(RTL871X)_cmd.o 
+			hal/$(RTL871X)/$(RTL871X)_cmd.o
 #			hal/$(RTL871X)/hal8814a_fw.o
 
 
@@ -1721,6 +1722,17 @@ KSRC ?= /lib/modules/$(KVER)/build
 MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
 endif
 
+ifeq ($(CONFIG_PLATFORM_ARM_ODROIDC2), y)
+EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
+EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH ?= arm64
+CROSS_COMPILE ?=
+KVER ?= $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
+endif
+
 ifeq ($(CONFIG_PLATFORM_RTK129X), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
 EXTRA_CFLAGS += -DRTK_129X_PLATFORM
@@ -1774,7 +1786,7 @@ ARCH := arm
 CROSS_COMPILE := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
 KSRC := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/kernel
 MODULE_NAME := wlan
-endif 
+endif
 
 # ARM64 - odroid-c2 and such
 ifeq ($(CONFIG_PLATFORM_ARM64), y)
@@ -1837,7 +1849,7 @@ rtk_core :=	core/rtw_cmd.o \
 		core/rtw_btcoex.o \
 		core/rtw_beamforming.o \
 		core/rtw_odm.o \
-		core/efuse/rtw_efuse.o 
+		core/efuse/rtw_efuse.o
 
 ifeq ($(CONFIG_SDIO_HCI), y)
 rtk_core += core/rtw_sdio.o
