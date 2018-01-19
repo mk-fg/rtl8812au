@@ -152,9 +152,20 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
   Beamforming, etc), as supported by hardware/driver and configuration,
   including resulting mask of them.
 
-- ``/proc/net/rtl8812au/wlan0/ap_info`` (and ``sta_info``).
+- ``/proc/net/rtl8812au/wlan0/{ap,sta}_info``
 
-- ... and many more.
+- Counters / stats / metrics:
+
+  - ``/proc/net/rtl8812au/wlan0/rx_signal``
+  - ``/proc/net/rtl8812au/wlan0/trx_info``
+  - ``/proc/net/rtl8812au/wlan0/trx_info_debug``
+
+  - ``/proc/net/rtl8812au/wlan0/rx_stat`` - counts of frames transmitted at
+    specific mimo modes and rates (e.g. VHTSS2MCS4 = VHT + 2 Spatial Streams +
+    MCS4 coding set, see include/hal_com.h and http://mcsindex.com/ ), gets
+    reset after each poll.
+
+  - ``/proc/net/rtl8812au/wlan0/{rx,tx,int}_logs`` - lots of counters.
 
 
 Links
