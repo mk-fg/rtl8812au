@@ -169,10 +169,9 @@ upstream sources (code dumps) for this driver, which these are usually based on.
 
 More general links:
 
-- Documentation for various driver features (dated from around 2015, not
-  up-to-date with the code): `see document/ dir in this repo <document>`_
-
-- Datasheet: https://wenku.baidu.com/view/733fb49602020740be1e9bb0.html
+- Chip datasheet (rev May 2012) and documentation for various driver features
+  (dated from around 2015, not up-to-date with the code):
+  `see document/ dir in this repo <document>`_
 
 - | Other ArchLinux AUR builds for this module (from different repos):
   | https://aur.archlinux.org/packages/?O=0&SeB=nd&K=8812au&outdated=&SB=n&SO=a&PP=50&do_Search=Go
