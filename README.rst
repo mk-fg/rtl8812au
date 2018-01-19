@@ -24,7 +24,7 @@ For more orthodox forks of this driver, which should probably be picked instead
 of this one for any kind of general use, see following links:
 
 - https://github.com/gordboy/rtl8812au/ (5.2.20)
-- https://github.com/aircrack-ng/rtl8812au/ (5.1.5 with 8814A and radiotap patches)
+- https://github.com/astsam/rtl8812au/ (5.1.5 with 8814A and radiotap patches)
 - https://github.com/zebulon2/rtl8812au-driver-5.2.9 (used in Debian packages)
 - https://aur.archlinux.org/packages/rtl8812au-dkms-git/ (Arch Linux AUR package)
 
