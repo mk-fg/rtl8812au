@@ -78,11 +78,7 @@ CONFIG_RTW_REPEATER_SON = n
 CONFIG_VHT_EXTRAS = y
 CONFIG_LED_CONTROL = y
 CONFIG_LED_ENABLE = y
-########################## Debug ###########################
-CONFIG_RTW_DEBUG = y
-# default log level is _DRV_INFO_ = 4,
-# please refer to "How_to_set_driver_debug_log_level.doc" to set the available level.
-CONFIG_RTW_LOG_LEVEL = 4
+CONFIG_USB2_EXTERNAL_POWER = n
 ######################## Wake On Lan ##########################
 CONFIG_WOWLAN = n
 CONFIG_WAKEUP_TYPE = 0x7 #bit2: deauth, bit1: unicast, bit0: magic pkt.
@@ -175,6 +171,24 @@ ifeq ($(CONFIG_PCI_HCI), y)
 HCI_NAME = pci
 endif
 
+ifeq ($(shell test $(DEBUG) -gt 0; echo $$?), 0)
+EXTRA_CFLAGS += -DCONFIG_RTW_DEBUG -DRTW_LOG_LEVEL=4
+EXTRA_CFLAGS += -DCONFIG_DBG -DCONFIG_PROC_DEBUG -DCONFIG_DBG_COUNTER
+endif
+
+ifeq ($(shell test $(DEBUG) -gt 1; echo $$?), 0)
+EXTRA_CFLAGS += -DCONFIG_DBG_TXPOWER
+EXTRA_CFLAGS += -DCONFIG_DBG_TRX_ERRORS
+EXTRA_CFLAGS += -DCONFIG_DBG_RX_SIGNAL
+endif
+
+ifeq ($(shell test $(DEBUG) -gt 2; echo $$?), 0)
+EXTRA_CFLAGS += -DCONFIG_DBG_ALL
+endif
+
+ifeq ($(CONFIG_USB2_EXTERNAL_POWER), y)
+EXTRA_CFLAGS += CONFIG_USE_EXTERNAL_POWER
+endif
 
 _OS_INTFS_FILES :=	os_dep/osdep_service.o \
 			os_dep/linux/os_intfs.o \
@@ -984,11 +998,6 @@ endif
 
 ifeq ($(CONFIG_APPEND_VENDOR_IE_ENABLE), y)
 EXTRA_CFLAGS += -DCONFIG_APPEND_VENDOR_IE_ENABLE
-endif
-
-ifeq ($(CONFIG_RTW_DEBUG), y)
-EXTRA_CFLAGS += -DCONFIG_RTW_DEBUG
-EXTRA_CFLAGS += -DRTW_LOG_LEVEL=$(CONFIG_RTW_LOG_LEVEL)
 endif
 
 EXTRA_CFLAGS += -DDM_ODM_SUPPORT_TYPE=0x04

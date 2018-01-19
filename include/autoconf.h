@@ -323,39 +323,56 @@
 /*
  * Debug Related Config
  */
+
+#ifdef CONFIG_DBG_ALL
+#define CONFIG_DBG
+#define CONFIG_DBG_TXPOWER
+#define CONFIG_DBG_TRX_ERRORS
+#define CONFIG_DBG_RX_SIGNAL
+#define CONFIG_DBG_MISC
+#endif
+
+#ifdef CONFIG_DBG
 #define DBG 1
-
-#define CONFIG_PROC_DEBUG
-
+#define DBG_RX_DFRAME_RAW_DATA
 #define DBG_CONFIG_ERROR_DETECT
 /* #define DBG_CONFIG_ERROR_DETECT_INT */
 /* #define DBG_CONFIG_ERROR_RESET */
+#endif
 
-/* #define DBG_IO */
-/* #define DBG_DELAY_OS */
-/* #define DBG_MEM_ALLOC */
-/* #define DBG_IOCTL */
-
-/* #define DBG_TX */
-/* #define DBG_XMIT_BUF */
-/* #define DBG_XMIT_BUF_EXT */
-/* #define DBG_TX_DROP_FRAME */
-
-/* #define DBG_RX_DROP_FRAME */
-/* #define DBG_RX_SEQ */
-/* #define DBG_RX_SIGNAL_DISPLAY_PROCESSING */
-/* #define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED "jeff-ap" */
-
+#ifdef CONFIG_DBG_TXPOWER
 #define DBG_TX_POWER_IDX 1
 #define DBG_PG_TXPWR_READ 1
+#endif
 
+#ifdef CONFIG_DBG_TRX_ERRORS
+#define DBG_TX
+#define DBG_TX_DROP_FRAME
+#define DBG_RX_DROP_FRAME
+#endif
 
+#ifdef CONFIG_DBG_RX_SIGNAL
+#define DBG_RX_SIGNAL_DISPLAY_PROCESSING
+#endif
 
-/* #define DBG_SHOW_MCUFWDL_BEFORE_51_ENABLE */
-/* #define DBG_ROAMING_TEST */
+#ifdef CONFIG_DBG_RX_SIGNAL_AP
+#define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED CONFIG_DBG_RX_SIGNAL_AP
+#endif
 
-/* #define DBG_HAL_INIT_PROFILING */
+#ifdef CONFIG_DBG_MISC
+#define DBG_IO
+#define DBG_DELAY_OS
+#define DBG_MEM_ALLOC
+#define DBG_IOCTL
+#define DBG_XMIT_BUF
+#define DBG_XMIT_BUF_EXT
+#define DBG_RX_SEQ
+#endif
 
-/*#define DBG_MEMORY_LEAK*/
-#define	DBG_RX_DFRAME_RAW_DATA
+#ifdef CONFIG_DBG_PROFILING
+#define DBG_ROAMING_TEST
+#define DBG_HAL_INIT_PROFILING
+#define DBG_MEMORY_LEAK
+#endif
+
 /*#define CONFIG_USE_EXTERNAL_POWER  */        /* NOT USB2.0 power, so no 500mA power constraint, no limitation in Power by Rate*/

@@ -119,8 +119,26 @@ and some dongles might allow e.g. 160MHz or 80+80 channel widths (different
 vht_oper_chwidth values), 2x2 or 4x4 STBC, beamforming, and such, which driver
 seem to have the code for.
 
+For a bit more info on AP/STA mode configuration, see following links:
+
+- http://blog.fraggod.net/2017/04/27/wifi-hostapd-configuration-for-80211ac-networks.html
+- https://github.com/mk-fg/archlinux-pkgbuilds/issues/2#issuecomment-325991813
+
+
+Debugging
+---------
+
+First of all, enable DEBUG= with make or dkms.conf, e.g. ``make DEBUG=2``.
+
+Values for DEBUG= are 0-3 for progressively more info, see Makefile and
+include/autoconf.h for details or to tweak which specific bits should be enabled.
+
+With DEBUG>0, kmsg logging verbosity can be controlled by rtw_drv_log_level=
+module parameter: 0=none, 2=error, 3=warn, 4=info (default), 5=debug, 6=max.
+
 For more information about what your specific dongle supports and is configured
-for, use /proc interface that this driver provides under ``/proc/net/rtl8812au/``.
+for, use /proc interface (with DEBUG>0) that this driver provides under
+``/proc/net/rtl8812au/``.
 
 Some useful info nodes there (replace "wlan0" below with your interface name):
 
@@ -136,12 +154,7 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
 
 - ``/proc/net/rtl8812au/wlan0/ap_info`` (and ``sta_info``).
 
-- ... and many more, in addition to rather extensive logging that is enabled by default.
-
-For a bit more info on AP/STA mode configuration, see following links:
-
-- http://blog.fraggod.net/2017/04/27/wifi-hostapd-configuration-for-80211ac-networks.html
-- https://github.com/mk-fg/archlinux-pkgbuilds/issues/2#issuecomment-325991813
+- ... and many more.
 
 
 Links
