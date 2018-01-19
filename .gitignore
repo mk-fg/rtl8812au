@@ -1,0 +1,15 @@
+# C / Kbuild
+f*.o
+*.cmd
+*.ko
+*.cm
+Module.symvers
+modules.order
+*.mod.c
+.tmp_versions
+
+# Local stuff
+/img-*
+/build
+/cscope.out
+/*.yaml
