@@ -10,10 +10,7 @@ version:
 
 gordboy repo already has VHT patches and is updated to work with latest kernels.
 
-This repo is for testing various performance patches/tweaks on top of that.
-
-Note that performance for 5.2.x driver version seem to be worse than for older
-5.1.5, see "old-5.1.5" branch here for that version instead.
+This repo is for testing various performance-related patches/tweaks on top of that.
 
 For ArchLinuxARM PKGBUILD of module from this repo for ODROID-C2 (aarch64,
 mainline 4.13.x+ kernel), see:
@@ -47,9 +44,6 @@ of this README).
 Performance
 -----------
 
-**Important:** these test results are for previous 5.1.5 driver version with
-same VHT patches, results on 5.2.x (codebase here) may vary!
-
 Should very heavily depend on card/dongle used, but between two
 ALFA Network AWUS036AC USB dongles plugged into RPi3/ODROID-C2 (USB 2.0)
 that I've tested using WiFi Infrastructure mode (AP + STA) with VHT (802.11ac)
@@ -62,7 +56,7 @@ supported by this driver will have same limitations, and here just to show that
 driver itself can at least support that much
 (easily - extra cpu load is negligible, no bugs).
 
-Relevant hostapd.conf options used for this specific dongle and test::
+Relevant hostapd.conf options used for AP dongle and test::
 
   hw_mode=a
   ieee80211n=1
@@ -70,9 +64,9 @@ Relevant hostapd.conf options used for this specific dongle and test::
   ieee80211ac=1
   require_vht=1
 
-  channel=149
+  channel=52
   vht_oper_chwidth=1
-  vht_oper_centr_freq_seg0_idx=155
+  vht_oper_centr_freq_seg0_idx=58
   ht_capab=[HT40+][SHORT-GI-40]
   vht_capab=[SHORT-GI-80][MAX-MPDU-11454][MAX-A-MPDU-LEN-EXP7][BF-ANTENNA-2][SU-BEAMFORMER][SU-BEAMFORMEE]
 
@@ -85,6 +79,9 @@ For a bit more info on AP/STA mode configuration, see following links:
 
 - http://blog.fraggod.net/2017/04/27/wifi-hostapd-configuration-for-80211ac-networks.html
 - https://github.com/mk-fg/archlinux-pkgbuilds/issues/2#issuecomment-325991813
+
+Very similar performance between 5.1.5 (old-5.1.5 branch) and 5.2.20 (this one)
+driver versions, while 5.2.9 (old-5.2.9.3 branch) is way worse.
 
 
 Debugging
