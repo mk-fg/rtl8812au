@@ -81,15 +81,15 @@ MODULE_PARM_DESC(rtw_ips_mode, "The default IPS mode");
 module_param(rtw_lps_level, int, 0644);
 MODULE_PARM_DESC(rtw_lps_level, "The default LPS level");
 
-/* LPS: 
+/* LPS:
  * rtw_smart_ps = 0 => TX: pwr bit = 1, RX: PS_Poll
  * rtw_smart_ps = 1 => TX: pwr bit = 0, RX: PS_Poll
  * rtw_smart_ps = 2 => TX: pwr bit = 0, RX: NullData with pwr bit = 0
 */
 int rtw_smart_ps = 2;
 
-#ifdef CONFIG_WMMPS_STA	
-/* WMMPS: 
+#ifdef CONFIG_WMMPS_STA
+/* WMMPS:
  * rtw_smart_ps = 0 => Only for fw test
  * rtw_smart_ps = 1 => Refer to Beacon's TIM Bitmap
  * rtw_smart_ps = 2 => Don't refer to Beacon's TIM Bitmap
@@ -159,7 +159,7 @@ int rtw_uapsd_ac_enable = 0x0;
 	int rtw_pwrtrim_enable = 0; /* Default Enalbe  power trim by efuse config */
 #endif
 
-uint rtw_tx_bw_mode = 0x21;
+uint rtw_tx_bw_mode = 0x21; // = 0010 0001 = (0010 = 2 = 80MHz, 0001 = 1 = 40 MHz) (see rtw_bw_mode below)
 module_param(rtw_tx_bw_mode, uint, 0644);
 MODULE_PARM_DESC(rtw_tx_bw_mode, "The max tx bw for 2.4G and 5G. format is the same as rtw_bw_mode");
 
@@ -171,7 +171,7 @@ int rtw_ht_enable = 1;
 #ifdef CONFIG_RTW_CUSTOMIZE_BWMODE
 int rtw_bw_mode = CONFIG_RTW_CUSTOMIZE_BWMODE;
 #else
-int rtw_bw_mode = 0x21;
+int rtw_bw_mode = 0x21; // = 0010 0001 = (0010 = 2 = 80MHz, 0001 = 1 = 40 MHz)
 #endif
 int rtw_ampdu_enable = 1;/* for enable tx_ampdu , */ /* 0: disable, 0x1:enable */
 int rtw_rx_stbc = 1;/* 0: disable, bit(0):enable 2.4g, bit(1):enable 5g, default is set to enable 2.4GHZ for IOT issue with bufflao's AP at 5GHZ */

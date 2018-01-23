@@ -78,7 +78,7 @@ CONFIG_RTW_REPEATER_SON = n
 CONFIG_VHT_EXTRAS = y
 CONFIG_LED_CONTROL = y
 CONFIG_LED_ENABLE = y
-CONFIG_USB2_EXTERNAL_POWER = n
+CONFIG_USB2_EXTERNAL_POWER = y
 ######################## Wake On Lan ##########################
 CONFIG_WOWLAN = n
 CONFIG_WAKEUP_TYPE = 0x7 #bit2: deauth, bit1: unicast, bit0: magic pkt.
