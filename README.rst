@@ -1,5 +1,16 @@
 rtl8812au
 =========
+---------------------------------------------------------------------------
+Linux kernel driver for USB WiFi dongles based on Realtek rtl8812au chipset
+---------------------------------------------------------------------------
+
+.. contents::
+  :backlinks: none
+
+
+
+Description
+-----------
 
 Linux kernel driver for USB WiFi dongles based on Realtek rtl8812au chipset.
 
@@ -26,6 +37,7 @@ of this one for any kind of general use, see following links:
 - https://aur.archlinux.org/packages/rtl8812au-dkms-git/ (Arch Linux AUR package)
 
 
+
 Note on support / development / patches
 ---------------------------------------
 
@@ -39,6 +51,27 @@ Maybe just fork the repo and apply whatever you need there instead, or complain
 about anything that doesn't work right to hardware vendor or realtek (though
 note that they haven't released this code publicly - see source links at the top
 of this README).
+
+
+
+Upstreaming status
+------------------
+
+Coming from the future (2018+), you might find this driver to be superseded by
+rtl8xxxu module in linux kernel, which aims to incorporate support for all such
+dongles, based on code from realtek driver trees like this one.
+
+| As of early 2018, 881xau ac dongles are not supported in mainline rtl8xxxu module.
+| If you want to work on this stuff, maybe start there.
+|
+
+More info on history, rationale and internals of both rtl8xxxu and realtek
+vendor drivers:
+
+- `"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
+  Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
+  <https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
+
 
 
 Performance
@@ -84,6 +117,7 @@ Very similar performance between 5.1.5 (old-5.1.5 branch) and 5.2.20 (this one)
 driver versions, while 5.2.9 (old-5.2.9.3 branch) is way worse.
 
 
+
 Debugging
 ---------
 
@@ -127,6 +161,7 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
   - ``/proc/net/rtl8812au/wlan0/{rx,tx,int}_logs`` - lots of counters.
 
 
+
 Links
 -----
 
@@ -135,7 +170,7 @@ driver, i.e. places to watch for new issues, commits, pull requests and forks
 (in no particular order):
 
 - https://github.com/gordboy/rtl8812au/
-- https://github.com/zebulon2/rtl8812au-driver-5.2.9
+- https://github.com/zebulon2/rtl8812au-driver-5.2.9/
 - https://github.com/aircrack-ng/rtl8812au/
 - https://github.com/astsam/rtl8812au/
 - https://github.com/abperiasamy/rtl8812AU_8821AU_linux/
@@ -143,6 +178,7 @@ driver, i.e. places to watch for new issues, commits, pull requests and forks
 - https://github.com/diederikdehaas/rtl8812AU/
 - https://github.com/gnab/rtl8812au/
 - https://github.com/ulli-kroll/rtl8821au/
+- https://github.com/lwfinger/ (rtl vendor driver sources/communication)
 
 Not all (or any?) of these forks are linked under "Forks" tab on github.
 
@@ -154,6 +190,10 @@ More general links:
 - Chip datasheet (rev May 2012) and documentation for various driver features
   (dated from around 2015, not up-to-date with the code):
   `see document/ dir in this repo <document>`_
+
+- List of 8812au devices (not necessarily have vid/pid listed in this driver!):
+  `wikidevi.com link
+  <https://wikidevi.com/wiki/Special:Ask?title=Special%3AAsk&q=%5B%5BChip1+model::RTL8812AU%5D%5D&po=%3FInterface%0D%0A%3FForm+factor=FF%0D%0A%3FInterface+connector+type=USB+conn.%0D%0A%3FFCC+ID%0D%0A%3FManuf%0D%0A%3FManuf+product+model=Manuf.+mdl%0D%0A%3FVendor+ID%0D%0A%3FDevice+ID%0D%0A%3FChip1+model%0D%0A%3FSupported+802dot11+protocols=PHY+modes%0D%0A%3FMIMO+config%0D%0A%3FOUI%0D%0A%3FEstimated+year+of+release=Est.+year&eq=yes&p%5Bformat%5D=broadtable&order%5B0%5D=ASC&sort_num=&order_num=ASC&p%5Blimit%5D=500&p%5Boffset%5D=&p%5Blink%5D=all&p%5Bsort%5D=&p%5Bheaders%5D=show&p%5Bmainlabel%5D=&p%5Bintro%5D=&p%5Boutro%5D=&p%5Bsearchlabel%5D=%E2%80%A6+further+results&p%5Bdefault%5D=&p%5Bclass%5D=sortable+wikitable+smwtable>`_
 
 - | Other ArchLinux AUR builds for this module (from different repos):
   | https://aur.archlinux.org/packages/?O=0&SeB=nd&K=8812au&outdated=&SB=n&SO=a&PP=50&do_Search=Go
