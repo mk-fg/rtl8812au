@@ -67,10 +67,14 @@ dongles, based on code from realtek driver trees like this one.
 
 More info on history, rationale and internals of both rtl8xxxu and realtek
 vendor drivers:
+`"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
+Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
+<https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
 
-- `"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
-  Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
-  <https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
+Alternatively, support for these dongles in future kernels might come from
+staging rtlwifi driver, as there's already one for rtl8822be (Aug 2017),
+which includes bunch of common stuff (e.g. phydm) for ac dongles, and rtlwifi is
+already used for some usb dongles.
 
 
 
@@ -159,6 +163,60 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     reset after each poll.
 
   - ``/proc/net/rtl8812au/wlan0/{rx,tx,int}_logs`` - lots of counters.
+
+- ``/proc/net/rtl8812au/wlan0/odm/cmd``
+
+  Read/write "console" for phydm_cmd() (phydm_debug.c, PHY DM = PHY-layer
+  Dynamic Management) interface in the driver, which can be used to debug its
+  low-level operation.
+
+  Expects "command arg1 arg2 ... argX" (commas also work) string to be written
+  there, ending in newline, which goes to phydm_cmd() and output can be read via
+  subsequent read on that node ("GET, nothing to print" indicates no output/command).
+
+  `phydm-cmd.py script <phydm-cmd.py>`_ (python3/readline) in this repo can be
+  used to work with this interface interactively.
+
+  Some phydm_cmd() commands/examples:
+
+  - ``-h`` - list supported commands, except ``-h`` itself and ``demo``.
+  - ``demo 10 0x3a z abcde`` - dummy command to print arguments, parsed as different types.
+
+  - ``dbg`` - controls debug logging for different phydm components.
+
+    - ``dbg 100`` - dump different phydm debug logging components, and whether
+      logging for each one is enabled ("V") or not (".").
+
+      Should look something like this::
+
+        ================================
+        [Debug Message] PhyDM Selection
+        ================================
+        00. (( . ))DIG
+        01. (( . ))RA_MASK
+        02. (( V ))DYNAMIC_TXPWR
+        03. (( . ))FA_CNT
+        04. (( . ))RSSI_MONITOR
+        05. (( . ))CCKPD
+        06. (( . ))ANT_DIV
+        07. (( . ))SMT_ANT
+        ...
+
+    - ``dbg 101`` - disable phydm debug logging (all components).
+
+    - ``dbg 4 1`` - enable phydm debug logging for RSSI_MONITOR component - 04
+      in the "dbg 100" list (see above, number parsed as decimal), 1=enable, 2=disable.
+
+    These will be logged to kmsg/dmesg, same as other debug stuff from driver.
+
+  - ``h2c 0x00 0x01 ... 0x07`` - send firmware command 0x00 via h2c register,
+    with specified parameters.
+
+    See h2c_cmd enum in ``include/hal_com_h2c.h`` for list of commands, or
+    h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably more
+    descriptive), or similar stuff in rtlwifi module.
+
+  - ... and there's much more of them.
 
 
 
