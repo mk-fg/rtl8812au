@@ -1,0 +1,2 @@
+This document was marked as proprietary/confidential, so not in this repository.
+But it's easy to find online, just google by this name in relation with realtek/driver/model.

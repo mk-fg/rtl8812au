@@ -65,11 +65,11 @@ dongles, based on code from realtek driver trees like this one.
 | If you want to work on this stuff, maybe start there.
 |
 
-More info on history, rationale and internals of both rtl8xxxu and realtek
-vendor drivers:
-`"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
-Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
-<https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
+| More info on history, rationale and internals of both rtl8xxxu and realtek vendor drivers:
+| `"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
+  Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
+  <https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
+|
 
 Alternatively, support for these dongles in future kernels might come from
 staging rtlwifi driver, as there's already one for rtl8822be (Aug 2017),
@@ -118,7 +118,7 @@ For a bit more info on AP/STA mode configuration, see following links:
 - https://github.com/mk-fg/archlinux-pkgbuilds/issues/2#issuecomment-325991813
 
 Very similar performance between 5.1.5 (old-5.1.5 branch) and 5.2.20 (this one)
-driver versions, while 5.2.9 (old-5.2.9.3 branch) is way worse.
+driver versions, while 5.2.9 is way worse.
 
 
 
@@ -215,7 +215,7 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     H2C = Host-To-Chip (?) command from CMD/EVENT mechanism to make firmware do
     stuff on its own (offload) or change parameters, reporting back via C2H event.
     See e.g. `RTL8712_D0_1_Programming_Guide_20090601.pdf
-    <document/RTL8712_D0_1_Programming_Guide_20090601.pdf>`_ for info on such concepts.
+    <document/RTL8712_D0_1_Programming_Guide_20090601.pdf.txt>`_ for info on such concepts.
 
     See h2c_cmd enum in ``include/hal_com_h2c.h`` for list of commands, or
     h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably more
