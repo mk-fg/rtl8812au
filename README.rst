@@ -209,8 +209,13 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
 
     These will be logged to kmsg/dmesg, same as other debug stuff from driver.
 
-  - ``h2c 0x00 0x01 ... 0x07`` - send firmware command 0x00 via h2c register,
-    with specified parameters.
+  - ``h2c 0x00 0x01 ... 0x07`` - send H2C command 0x00 to firmware with
+    specified parameters.
+
+    H2C = Host-To-Chip (?) command from CMD/EVENT mechanism to make firmware do
+    stuff on its own (offload) or change parameters, reporting back via C2H event.
+    See e.g. `RTL8712_D0_1_Programming_Guide_20090601.pdf
+    <document/RTL8712_D0_1_Programming_Guide_20090601.pdf>`_ for info on such concepts.
 
     See h2c_cmd enum in ``include/hal_com_h2c.h`` for list of commands, or
     h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably more
@@ -246,7 +251,7 @@ upstream sources (code dumps) for this driver, which these are usually based on.
 More general links:
 
 - Chip datasheet (rev May 2012) and documentation for various driver features
-  (dated from around 2015, not up-to-date with the code):
+  (dated from around 2009-2015, not up-to-date with the code):
   `see document/ dir in this repo <document>`_
 
 - List of 8812au devices (not necessarily have vid/pid listed in this driver!):
