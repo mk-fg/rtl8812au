@@ -235,6 +235,8 @@ typedef enum _HAL_DEF_VARIABLE {
 	HAL_DEF_EFUSE_USAGE,	/* Get current EFUSE utilization. 2008.12.19. Added by Roger. */
 	HAL_DEF_EFUSE_BYTES,
 	HW_VAR_BEST_AMPDU_DENSITY,
+
+	HAL_DEF_RF_TYPE,
 } HAL_DEF_VARIABLE;
 
 typedef enum _HAL_ODM_VARIABLE {

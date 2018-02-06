@@ -297,7 +297,7 @@ static u8 rtw_chbw_to_cfg80211_chan_def(struct wiphy *wiphy, struct cfg80211_cha
 	if (!chan)
 		goto exit;
 
-	if (bw == CHANNEL_WIDTH_20) 
+	if (bw == CHANNEL_WIDTH_20)
 		chdef->width = ht ? NL80211_CHAN_WIDTH_20 : NL80211_CHAN_WIDTH_20_NOHT;
 	else if (bw == CHANNEL_WIDTH_40)
 		chdef->width = NL80211_CHAN_WIDTH_40;
@@ -331,7 +331,7 @@ static void rtw_get_chbw_from_cfg80211_chan_def(struct cfg80211_chan_def *chdef,
 		rtw_warn_on(1);
 		*ch = 0;
 		return;
-	}		
+	}
 
 	switch (chdef->width) {
 	case NL80211_CHAN_WIDTH_20_NOHT:
@@ -1499,8 +1499,8 @@ static int rtw_cfg80211_set_encryption(struct net_device *dev, struct ieee_param
 						_rtw_memcpy(padapter->securitypriv.dot118021XGrptxmickey[param->u.crypt.idx].skey, &(param->u.crypt.key[16]), 8);
 						_rtw_memcpy(padapter->securitypriv.dot118021XGrprxmickey[param->u.crypt.idx].skey, &(param->u.crypt.key[24]), 8);
 						padapter->securitypriv.binstallGrpkey = _TRUE;
-						if (param->u.crypt.idx < 4) 
-							_rtw_memcpy(padapter->securitypriv.iv_seq[param->u.crypt.idx], param->u.crypt.seq, 8);							
+						if (param->u.crypt.idx < 4)
+							_rtw_memcpy(padapter->securitypriv.iv_seq[param->u.crypt.idx], param->u.crypt.seq, 8);
 
 						/* DEBUG_ERR((" param->u.crypt.key_len=%d\n", param->u.crypt.key_len)); */
 						RTW_INFO(" ~~~~set sta key:groupkey\n");
@@ -5774,7 +5774,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 
 			if (check_fwstate(&padapter->mlmepriv, _FW_LINKED))
 				ext_listen_period = 500;/*500ms*/
-#ifdef CONFIG_P2P				
+#ifdef CONFIG_P2P
 			else
 				ext_listen_period = pwdinfo->ext_listen_period;
 
@@ -6443,13 +6443,13 @@ int	cfg80211_rtw_resume(struct wiphy *wiphy) {
 		//rtw_sitesurvey_cmd(padapter, NULL, 0, NULL, 0);
 		rtw_sitesurvey_cmd(padapter, (NDIS_802_11_SSID*)&pwrpriv->pno_ssid_list->node, pwrpriv->pnlo_info->ssid_num, NULL, 0);
 		_exit_critical_bh(&pmlmepriv->lock, &irqL);
-		
+
 		for (PNOWakeupScanWaitCnt = 0; PNOWakeupScanWaitCnt < 10; PNOWakeupScanWaitCnt++) {
 			if(check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _FALSE)
 				break;
 			rtw_msleep_os(1000);
 		}
-		
+
 		_enter_critical_bh(&pmlmepriv->lock, &irqL);
 		cfg80211_sched_scan_results(padapter->rtw_wdev->wiphy);
 		_exit_critical_bh(&pmlmepriv->lock, &irqL);
@@ -6457,7 +6457,7 @@ int	cfg80211_rtw_resume(struct wiphy *wiphy) {
 	}
 	RTW_DBG("<== %s\n",__func__);
 	return 0;
-	
+
 }
 #endif /* CONFIG_PNO_SUPPORT */
 
@@ -6935,13 +6935,13 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 	struct registry_priv *pregistrypriv = &padapter->registrypriv;
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
 	struct vht_priv	*pvhtpriv = &pmlmepriv->vhtpriv;
-	u8 bw, rf_num, rx_stbc_nss = 0;
+	u8 bw, rf_num;
 	u16 HighestRate;
 	u32 rx_packet_offset, max_recvbuf_sz;
 
 	vht_cap->vht_supported = _TRUE;
 	rtw_vht_use_default_setting(padapter);
-	
+
 	/* Reference: core/rtw_vht.c */
 	/* MCS map */
 	vht_cap->vht_mcs.tx_mcs_map = pvhtpriv->vht_mcs_map[0] | (pvhtpriv->vht_mcs_map[1] << 8);
@@ -6951,60 +6951,66 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 	rtw_hal_get_def_var(padapter, HAL_DEF_RX_PACKET_OFFSET, &rx_packet_offset);
 	rtw_hal_get_def_var(padapter, HAL_DEF_MAX_RECVBUF_SZ, &max_recvbuf_sz);
 
-	if ((max_recvbuf_sz - rx_packet_offset) >= 11454) {
+	if ((max_recvbuf_sz - rx_packet_offset) >= 11454)
 		vht_cap->cap |= IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_11454;
-	} else if ((max_recvbuf_sz - rx_packet_offset) >= 7991) {
+	else if ((max_recvbuf_sz - rx_packet_offset) >= 7991)
 		vht_cap->cap |= IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_7991;
-	} else if ((max_recvbuf_sz - rx_packet_offset) >= 3895) {
+	else if ((max_recvbuf_sz - rx_packet_offset) >= 3895)
 		vht_cap->cap |= IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_3895;
-    }
 
 	/* B2 B3 Supported Channel Width Set */
-	if (hal_chk_bw_cap(padapter, BW_CAP_160M) && REGSTY_IS_BW_5G_SUPPORT(pregistrypriv, CHANNEL_WIDTH_160)) {
+	if (hal_chk_bw_cap(padapter, BW_CAP_160M) && REGSTY_IS_BW_5G_SUPPORT(pregistrypriv, CHANNEL_WIDTH_160))
 		if (hal_chk_bw_cap(padapter, BW_CAP_80_80M) && REGSTY_IS_BW_5G_SUPPORT(pregistrypriv, CHANNEL_WIDTH_80_80))
 			vht_cap->cap |= IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160_80PLUS80MHZ;
 		else
 			vht_cap->cap |= IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160MHZ;
-	}
-	
+
 	/* B4 Rx LDPC */
-	if(TEST_FLAG(pvhtpriv->ldpc_cap, LDPC_VHT_ENABLE_RX)) {
+	if(TEST_FLAG(pvhtpriv->ldpc_cap, LDPC_VHT_ENABLE_RX))
 		vht_cap->cap |= IEEE80211_VHT_CAP_RXLDPC;
-	}
 
 	/* B5 ShortGI for 80MHz */
-    if (pvhtpriv->sgi_80m)
+	if (pvhtpriv->sgi_80m)
 		vht_cap->cap |= IEEE80211_VHT_CAP_SHORT_GI_80;
 
 	/* B6 ShortGI for 160MHz */
 	// todo
 
 	/* B7 Tx STBC */
-	if(TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_TX)) {
+	if(TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_TX))
 		vht_cap->cap |= IEEE80211_VHT_CAP_TXSTBC;
-	}
-	
+
 	/* B8 B9 B10 Rx STBC */
 	if(TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_RX)) {
-		rtw_hal_get_def_var(padapter, HAL_DEF_RX_STBC, (u8 *)(&rx_stbc_nss));
-
-		if (rx_stbc_nss == 1)
+		switch (rf_type_to_rf_rx_cnt(rf_type)) {
+		case 1:
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_1;
-		else if (rx_stbc_nss == 2) 
+			break;
+		case 2:
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_2;
-		else if (rx_stbc_nss == 3) 
+			break;
+		case 3:
 			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_3;
+			break;
+		case 4:
+			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_4;
+			break;
+		default:
+			RTW_INFO("[VHT] (INIT STBC) unexpected rf_type value: %d\n", rf_type);
+			vht_cap->cap |= IEEE80211_VHT_CAP_RXSTBC_1;
+			break;
+		}
 	}
-	
+
 	/* B11 SU Beamformer Capable */
-	if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_BEAMFORMER_ENABLE)) {		
+	if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_BEAMFORMER_ENABLE)) {
 		vht_cap->cap |= IEEE80211_VHT_CAP_SU_BEAMFORMER_CAPABLE;
 		/* B16 17 18 Number of Sounding Dimensions */
 		rtw_hal_get_def_var(padapter, HAL_DEF_BEAMFORMER_CAP, (u8 *)&rf_num);
 		vht_cap->cap |= rf_num << IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_SHIFT;
-        /* B19 MU Beamformer Capable */
+		/* B19 MU Beamformer Capable */
 		if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_MU_MIMO_AP_ENABLE))
-            vht_cap->cap |= IEEE80211_VHT_CAP_MU_BEAMFORMER_CAPABLE;
+			vht_cap->cap |= IEEE80211_VHT_CAP_MU_BEAMFORMER_CAPABLE;
 	}
 
 	/* B12 SU Beamformee Capable */
@@ -7013,9 +7019,9 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 		// B13 14 15 Compressed Steering Number of Beamformer Antennas Supported
 		rtw_hal_get_def_var(padapter, HAL_DEF_BEAMFORMEE_CAP, (u8 *)&rf_num);
 		vht_cap->cap |= rf_num << IEEE80211_VHT_CAP_BEAMFORMEE_STS_SHIFT;
-        /* B20 MU Beamformee Capable */
+		/* B20 MU Beamformee Capable */
 		if (TEST_FLAG(pvhtpriv->beamform_cap, BEAMFORMING_VHT_MU_MIMO_STA_ENABLE))
-            vht_cap->cap |= IEEE80211_VHT_CAP_MU_BEAMFORMEE_CAPABLE;
+			vht_cap->cap |= IEEE80211_VHT_CAP_MU_BEAMFORMEE_CAPABLE;
 	}
 
 	// TXOP PS disabled or not supported
@@ -7039,9 +7045,8 @@ static void rtw_cfg80211_init_vht_capab(_adapter *padapter, struct ieee80211_sta
 	HighestRate = VHT_MCS_DATA_RATE[bw][pvhtpriv->sgi_80m][((pvhtpriv->vht_highest_rate - MGN_VHT1SS_MCS0)&0x3f)];
 	HighestRate = (HighestRate+1) >> 1;
 
-
 	vht_cap->vht_mcs.tx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.
-	vht_cap->vht_mcs.rx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.	
+	vht_cap->vht_mcs.rx_highest = HighestRate; //indicate we support highest rx rate is 600Mbps.
 }
 #endif //CONFIG_VHT_EXTRAS
 
@@ -7399,7 +7404,7 @@ int rtw_hostapd_acs_dump_survey(struct wiphy *wiphy, struct net_device *netdev, 
 #elif defined(CONFIG_RTW_ACS) && defined(CONFIG_BACKGROUND_NOISE_MONITOR)
 	rtw_cfg80211_set_survey_info_with_clm(padapter, idx, info);
 #else
-	RTW_ERR("%s: unknown acs operation!\n", __func__); 
+	RTW_ERR("%s: unknown acs operation!\n", __func__);
 #endif
 
 	return ret;

@@ -105,8 +105,8 @@ Relevant hostapd.conf options used for AP dongle and test::
   vht_capab=[SHORT-GI-80][MAX-MPDU-11454][MAX-A-MPDU-LEN-EXP7]
 
 Note that LDPC/STBC/Beamforming should be enabled for AP/STA implicitly,
-if dongle/driver support these, and can be checked by grepping
-"RTW: Current STA" in dmesg after connection (vs flags in rtw_vht.c).
+if dongle/driver support these, and can be checked by grepping "RTW: Current STA"
+in dmesg (with debug logging enabled) after connection (vs flags in rtw_vht.c).
 
 Same as for test results, these aren't necessarily supported by all dongles,
 and some dongles might allow e.g. 160MHz or 80+80 channel widths

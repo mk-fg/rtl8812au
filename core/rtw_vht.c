@@ -660,8 +660,8 @@ u32	rtw_build_vht_cap_ie(_adapter *padapter, u8 *pbuf)
 
 	/* B8 B9 B10 Rx STBC */
 	if (TEST_FLAG(pvhtpriv->stbc_cap, STBC_VHT_ENABLE_RX)) {
-		rtw_hal_get_def_var(padapter, HAL_DEF_RX_STBC, (u8 *)(&rx_stbc_nss));
-
+		rtw_hal_get_def_var(padapter, HAL_DEF_RF_TYPE, &rf_type);
+		rx_stbc_nss = rf_type_to_rf_rx_cnt(rf_type);
 		SET_VHT_CAPABILITY_ELE_RX_STBC(pcap, rx_stbc_nss);
 		RTW_INFO("[VHT] Declare supporting RX STBC = %d\n", rx_stbc_nss);
 	}
