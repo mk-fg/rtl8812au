@@ -58,23 +58,20 @@ Upstreaming status
 ------------------
 
 Coming from the future (2018+), you might find this driver to be superseded by
-rtl8xxxu module in linux kernel, which aims to incorporate support for all such
-dongles, based on code from realtek driver trees like this one.
+one of these two modules in mainline kernels:
 
-| As of early 2018, 881xau ac dongles are not supported in mainline rtl8xxxu module.
-| If you want to work on this stuff, maybe start there.
-|
+- rtl8xxxu - as of early 2018, 881xau ac dongles are not supported there.
 
-| More info on history, rationale and internals of both rtl8xxxu and realtek vendor drivers:
-| `"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
-  Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
-  <https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
-|
+  | More info on history, rationale and internals of both rtl8xxxu and realtek vendor drivers:
+  | `"Jes Sorensen: rtl8xxxu - true love for cheap USB WiFi dongles"
+    Linux Plumbers 2016 talk slides (PDF, 2016-11-02)
+    <https://www.linuxplumbersconf.org/2016/ocw/system/presentations/4089/original/2016-11-02-rtl8xxxu-presentation.pdf>`_
 
-Alternatively, support for these dongles in future kernels might come from
-staging rtlwifi driver, as there's already one for rtl8822be (Aug 2017),
-which includes bunch of common stuff (e.g. phydm) for ac dongles, and rtlwifi is
-already used for some usb dongles.
+- rtlwifi - more official one, supported by realtek people.
+
+  Already supports some USB dongles (rtl8192cu), and since Aug 2017 support for
+  rtl882xxe (PCI-E, some in staging) and common 802.11ac stuff (e.g. phydm)
+  have been merged there too.
 
 
 
@@ -101,16 +98,20 @@ Relevant hostapd.conf options used for AP dongle and test::
   ieee80211ac=1
   require_vht=1
 
-  channel=52
+  channel=100
   vht_oper_chwidth=1
-  vht_oper_centr_freq_seg0_idx=58
+  vht_oper_centr_freq_seg0_idx=106
   ht_capab=[HT40+][SHORT-GI-40]
-  vht_capab=[SHORT-GI-80][MAX-MPDU-11454][MAX-A-MPDU-LEN-EXP7][BF-ANTENNA-2][SU-BEAMFORMER][SU-BEAMFORMEE]
+  vht_capab=[SHORT-GI-80][MAX-MPDU-11454][MAX-A-MPDU-LEN-EXP7]
+
+Note that LDPC/STBC/Beamforming should be enabled for AP/STA implicitly,
+if dongle/driver support these, and can be checked by grepping
+"RTW: Current STA" in dmesg after connection (vs flags in rtw_vht.c).
 
 Same as for test results, these aren't necessarily supported by all dongles,
 and some dongles might allow e.g. 160MHz or 80+80 channel widths
 (different vht_oper_chwidth values), 4x4 MIMO/beamforming, and such,
-which driver seem to have the code for.
+some of which driver seem to have the code for.
 
 For a bit more info on AP/STA mode configuration, see following links:
 
@@ -205,7 +206,7 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     - ``dbg 101`` - disable phydm debug logging (all components).
 
     - ``dbg 4 1`` - enable phydm debug logging for RSSI_MONITOR component - 04
-      in the "dbg 100" list (see above, number parsed as decimal), 1=enable, 2=disable.
+      in the "dbg 100" list (see above, number parsed as decimal) - 1=enable, 2=disable.
 
     These will be logged to kmsg/dmesg, same as other debug stuff from driver.
 
@@ -217,11 +218,11 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     See e.g. `RTL8712_D0_1_Programming_Guide_20090601.pdf
     <document/RTL8712_D0_1_Programming_Guide_20090601.pdf.txt>`_ for info on such concepts.
 
-    See h2c_cmd enum in ``include/hal_com_h2c.h`` for list of commands, or
-    h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably more
-    descriptive), or similar stuff in rtlwifi module.
+    Check h2c_cmd enum in ``include/hal_com_h2c.h`` for list of commands,
+    or h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably
+    more descriptive), or similar stuff in rtlwifi module.
 
-  - ... and there's much more of them.
+  - ... and there's much more of them, see ``-h`` output.
 
 
 
