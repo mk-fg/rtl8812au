@@ -80,6 +80,13 @@ def get_command_list(node):
 		cmd_list.append(cmd)
 	return cmd_list
 
+def console_read_loop(node, dst=None):
+	if not dst: dst = sys.stdout
+	while True:
+		info = node.read_text(errors='replace')
+		if info.strip() == 'GET, nothing to print': break
+		dst.write(info)
+
 def console_loop(node):
 	log = get_logger('console')
 
@@ -95,10 +102,7 @@ def console_loop(node):
 			contextlib.suppress(EOFError, KeyboardInterrupt):
 		while True:
 			log.debug('Checking output...')
-			while True:
-				info = node.read_text(errors='replace')
-				if info.strip() == 'GET, nothing to print': break
-				sys.stdout.write(info)
+			console_read_loop(node)
 			log.debug('Querying new input...')
 			cmd = rlq.input()
 			log.debug('cmd: {!r}', cmd)
@@ -118,6 +122,10 @@ def main(args=None):
 	parser.add_argument('-p', '--odm-cmd-path', metavar='path',
 		help=f'Full path to specific {node}/.../{proc_odm_cmd} node to use.'
 			' Overrides -i/--iface option. Default is to pick one for any iface that is there.')
+	parser.add_argument('-c', '--cmd', action='append', metavar='command',
+		help='Command(s) to send non-interactively and exit.'
+			' Same as doing echo to {proc_odm_cmd} node, disables interactive console.'
+			' Can be specified multiple times, commands will be sent in the same order.')
 	parser.add_argument('-d', '--debug', action='store_true', help='Verbose operation mode.')
 	opts = parser.parse_args(sys.argv[1:] if args is None else args)
 
@@ -135,6 +143,13 @@ def main(args=None):
 			parser.error(f'Failed to match any phydm_cmd nodes via: {node / glob_mask}')
 		node = node_list[0]
 	log.debug('Using phydm_cmd node path: {}', node)
+
+	if opts.cmd:
+		for cmd in opts.cmd:
+			log.debug('cmd: {!r}', cmd)
+			node.write_text(cmd + '\n')
+			console_read_loop(node)
+		return
 
 	console_loop(node)
 
