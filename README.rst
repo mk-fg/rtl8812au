@@ -244,6 +244,22 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     or h2c_cmd struct in ``rtl8xxxu.h`` under linux sources (which is probably
     more descriptive), or similar stuff in rtlwifi module.
 
+  - ``tune_para`` - easy way to add runtime tweaks to any values in phydm struct
+    (which can then be used/applied pretty much anywhere in the driver), see
+    phydm_parameter_adjust().
+
+  - ``set_txagc`` - sets TX power index (0-63) for specific antenna (RF path,
+    0-3 for A-D) and MCS (0xff - all of them), e.g. ``set_txagc 1 0 0xff 0x3f``
+    to set power index for antenna-A to 63 (max) for all rates.
+
+    | ``set_txagc 0`` - disable all such overrides.
+    | Not sure what it has to do with AGC, as it usually applies to RX only.
+    | Seem to be for specific non-8812a chips only - 8822b / 8197f / 8821c, oh well.
+    | Has ``get_txagc`` counterpart, which prints TXAGC values on supported chips.
+
+    This module version has similar tweak as ``rtw_tx_pwr_idx_override=`` module
+    option, which sets specified power index to rf paths and rates.
+
   - ... and there's much more of them, see ``-h`` output.
 
 

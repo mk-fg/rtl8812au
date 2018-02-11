@@ -1973,10 +1973,6 @@ phydm_parameter_adjust(
 	u32 used = *_used;
 	u32 out_len = *_out_len;
 
-	/* PHYDM_SNPRINTF((output + used, out_len - used, "input1 = %s\n", input[1])); */
-	/* PHYDM_SSCANF(input[2], DCMD_DECIMAL, &arg); */
-	/* PHYDM_SNPRINTF((output + used, out_len - used, "input2 = %d\n", arg)); */
-
 	if ((strcmp(input[1], "ccap") == 0)) {
 		PHYDM_SSCANF(input[2], DCMD_DECIMAL, &arg);
 		if (arg == -1) PHYDM_SSCANF(input[2], DCMD_HEX, &arg);
