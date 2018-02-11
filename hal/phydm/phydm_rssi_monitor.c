@@ -291,6 +291,10 @@ odm_rssi_monitor_check_mp(
 					h2c_parameter[0] = (GET_STA_INFO(p_entry).mac_id);
 
 					odm_fill_h2c_cmd(p_dm, ODM_H2C_RSSI_REPORT, cmdlen, h2c_parameter);
+					PHYDM_DBG(p_dm, DBG_RSSI_MNTR, (
+						"PHYDM mp-port-%d h2c[0x42]=0x%x %x %x %x %x %x %x\n",
+						i, h2c_parameter[6], h2c_parameter[5], h2c_parameter[4],
+						h2c_parameter[3], h2c_parameter[2], h2c_parameter[1], h2c_parameter[0] ));
 				}
 			} else
 				break;
@@ -372,6 +376,10 @@ odm_rssi_monitor_check_mp(
 			h2c_parameter[0] = WIN_DEFAULT_PORT_MACID;		/* fw v12 cmdid 5:use max macid ,for nic ,default macid is 0 ,max macid is 1*/
 
 			odm_fill_h2c_cmd(p_dm, ODM_H2C_RSSI_REPORT, cmdlen, h2c_parameter);
+			PHYDM_DBG(p_dm, DBG_RSSI_MNTR, (
+				"PHYDM mp-port-default h2c[0x42]=0x%x %x %x %x %x %x %x\n",
+				h2c_parameter[6], h2c_parameter[5], h2c_parameter[4], h2c_parameter[3],
+				h2c_parameter[2], h2c_parameter[1], h2c_parameter[0] ));
 		}
 
 	} else
