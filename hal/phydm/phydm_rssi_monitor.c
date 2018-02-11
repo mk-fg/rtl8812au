@@ -37,6 +37,7 @@ phydm_rssi_monitor_h2c(
 	u8		stbc_en, ldpc_en;
 	u8		bf_en = 0;
 	u8		is_rx, is_tx;
+	u8		h2c_noisy, h2c_rssi;
 
 	if (is_sta_active(p_sta)) {
 		p_ra = &(p_sta->ra_info);
@@ -65,10 +66,13 @@ phydm_rssi_monitor_h2c(
 			((p_ra_t->RA_offset_direction) ? "+" : "-"), p_ra_t->RA_threshold_offset));
 	}
 
+	h2c_rssi = p_sta->rssi_stat.rssi + p_dm->test_rssi_offset;
+	h2c_noisy = (p_dm->noisy_decision & 0x1) & (~p_dm->test_noisy_disable & 0x1);
+
 	h2c_val[0] = p_sta->mac_id;
 	h2c_val[1] = 0;
-	h2c_val[2] = p_sta->rssi_stat.rssi;
-	h2c_val[3] = is_rx | (stbc_en << 1) | ((p_dm->noisy_decision & 0x1) << 2) |  (bf_en << 6);
+	h2c_val[2] = h2c_rssi;
+	h2c_val[3] = is_rx | (stbc_en << 1) | (h2c_noisy << 2) |  (bf_en << 6);
 	h2c_val[4] = (p_ra_t->RA_threshold_offset & 0x7f) | ((p_ra_t->RA_offset_direction & 0x1) << 7);
 	h2c_val[5] = 0;
 	h2c_val[6] = 0;
@@ -77,7 +81,7 @@ phydm_rssi_monitor_h2c(
 		"PHYDM h2c[0x42]=0x%x %x %x %x %x %x %x"
 			" [rssi=%d rx=%d noisy=%d stbc=%d bf=%d ra-to=%d ra-od=%d]\n",
 		h2c_val[6], h2c_val[5], h2c_val[4], h2c_val[3], h2c_val[2], h2c_val[1], h2c_val[0],
-		p_sta->rssi_stat.rssi, is_rx, stbc_en, p_dm->noisy_decision & 0x1, bf_en,
+		h2c_rssi, is_rx, stbc_en, h2c_noisy, bf_en,
 		p_ra_t->RA_threshold_offset & 0x7f, p_ra_t->RA_offset_direction & 0x1 ));
 
 	#if (RTL8188E_SUPPORT == 1)
