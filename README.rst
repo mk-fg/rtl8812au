@@ -57,8 +57,8 @@ of this README).
 Upstreaming status
 ------------------
 
-Coming from the future (2018+), you might find this driver to be superseded by
-one of these two modules in mainline kernels:
+Coming from the future (2018+), it's possible that you might find this driver to
+be superseded by one of these two modules in mainline kernels:
 
 - rtl8xxxu - as of early 2018, 881xau ac dongles are not supported there.
 
@@ -72,6 +72,16 @@ one of these two modules in mainline kernels:
   Already supports some USB dongles (rtl8192cu), and since Aug 2017 support for
   rtl882xxe (PCI-E, some in staging) and common 802.11ac stuff (e.g. phydm)
   have been merged there too.
+
+  Though Nov 2017 thread on linux-wireless ML shows that there are no plans for
+  porting 8812au there, and that it is highly unlikely to happen:
+
+    To my knowledge, there are no plans to convert the buggy, and badly written,
+    code for the RTL8812AU into a form that would be suitable for wireless.
+    Even getting it into a form that would be acceptable for staging would be a
+    formidable task. -- Larry Finger
+
+  https://www.spinics.net/lists/linux-wireless/msg167866.html
 
 
 
@@ -258,7 +268,7 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     | Has ``get_txagc`` counterpart, which prints TXAGC values on supported chips.
 
     This module version has similar tweak as ``rtw_tx_pwr_idx_override=`` module
-    option, which sets specified power index to rf paths and rates.
+    option, which sets specified power index for all rf paths and rates.
 
   - ... and there's much more of them, see ``-h`` output.
 
