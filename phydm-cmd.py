@@ -106,7 +106,7 @@ def console_loop(node):
 			log.debug('Querying new input...')
 			cmd = rlq.input()
 			log.debug('cmd: {!r}', cmd)
-			if cmd: node.write_text(cmd + '\n')
+			if cmd: node.write_text(cmd)
 	print()
 
 
