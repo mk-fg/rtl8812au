@@ -180,6 +180,7 @@ endif
 ifeq ($(shell test $(DEBUG) -gt 1; echo $$?), 0)
 EXTRA_CFLAGS += -DCONFIG_DBG_TXPOWER
 EXTRA_CFLAGS += -DCONFIG_DBG_RX_SIGNAL
+EXTRA_CFLAGS += -DCONFIG_DBG_RA
 endif
 
 ifeq ($(shell test $(DEBUG) -gt 2; echo $$?), 0)

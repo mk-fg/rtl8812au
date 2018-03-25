@@ -24,6 +24,39 @@ class LogStyleAdapter(logging.LoggerAdapter):
 get_logger = lambda name: LogStyleAdapter(logging.getLogger(name))
 
 
+def dump_constants(p):
+	drv_rates = [
+		'1M', '2M', '5_5M', '11M', '6M', '9M', '12M', '18M', '24M', '36M', '48M', '54M',
+		'MCS0', 'MCS1', 'MCS2', 'MCS3', 'MCS4', 'MCS5', 'MCS6', 'MCS7', 'MCS8', 'MCS9',
+		'MCS10', 'MCS11', 'MCS12', 'MCS13', 'MCS14', 'MCS15', 'MCS16', 'MCS17', 'MCS18', 'MCS19',
+		'MCS20','MCS21', 'MCS22', 'MCS23', 'MCS24', 'MCS25', 'MCS26', 'MCS27', 'MCS28', 'MCS29',
+		'MCS30', 'MCS31',
+		'VHTSS1MCS0', 'VHTSS1MCS1', 'VHTSS1MCS2', 'VHTSS1MCS3', 'VHTSS1MCS4',
+		'VHTSS1MCS5', 'VHTSS1MCS6', 'VHTSS1MCS7', 'VHTSS1MCS8', 'VHTSS1MCS9',
+		'VHTSS2MCS0', 'VHTSS2MCS1', 'VHTSS2MCS2', 'VHTSS2MCS3', 'VHTSS2MCS4',
+		'VHTSS2MCS5', 'VHTSS2MCS6', 'VHTSS2MCS7', 'VHTSS2MCS8', 'VHTSS2MCS9',
+		'VHTSS3MCS0', 'VHTSS3MCS1', 'VHTSS3MCS2', 'VHTSS3MCS3', 'VHTSS3MCS4',
+		'VHTSS3MCS5', 'VHTSS3MCS6', 'VHTSS3MCS7', 'VHTSS3MCS8', 'VHTSS3MCS9',
+		'VHTSS4MCS0', 'VHTSS4MCS1', 'VHTSS4MCS2', 'VHTSS4MCS3', 'VHTSS4MCS4',
+		'VHTSS4MCS5', 'VHTSS4MCS6', 'VHTSS4MCS7', 'VHTSS4MCS8', 'VHTSS4MCS9' ]
+
+	if p:
+		p = pathlib.Path(p)
+		if p.name == 'hal_com.h':
+			def parse_hal_com_data_rates(p):
+				rates = dict()
+				for line in p.read_text().splitlines():
+					m = re.search(r'^#define\s+DESC_RATE(\S+)\s+0x(\S+)\s*$', line)
+					if not m: continue
+					rates[int(m.group(2), 16)] = m.group(1)
+				return list(rates.get(n) for n in range(max(rates.keys())+1))
+			drv_rates = parse_hal_com_data_rates(p)
+		else: raise ValueError(f'Dont know how/what to parse (from) file: {p}')
+
+	print('List of TX rates (as "decimal_id rate"):')
+	for n, rate in enumerate(drv_rates): print(f'  {n:02d} {rate}')
+
+
 class ReadlineQuery:
 
 	prompt = '> '
@@ -126,11 +159,21 @@ def main(args=None):
 		help='Command(s) to send non-interactively and exit.'
 			' Same as doing echo to {proc_odm_cmd} node, disables interactive console.'
 			' Can be specified multiple times, commands will be sent in the same order.')
+	parser.add_argument('-x', '--const',
+		nargs='?', const=True, metavar='path',
+		help='Parse/print various constants from driver code and exit.'
+			' Run without arg to dump hard-coded'
+				' list of constants, without re-parsing them from headers.'
+			' Things to parse: .../include/hal_com.h')
 	parser.add_argument('-d', '--debug', action='store_true', help='Verbose operation mode.')
 	opts = parser.parse_args(sys.argv[1:] if args is None else args)
 
 	logging.basicConfig(level=logging.DEBUG if opts.debug else logging.WARNING)
 	log = get_logger('main')
+
+	if opts.const:
+		p = opts.const if opts.const is not True else None
+		return dump_constants(p)
 
 	if opts.odm_cmd_path: node = pathlib.Path(opts.odm_cmd_path)
 	elif opts.iface: node = node / opts.iface / proc_odm_cmd

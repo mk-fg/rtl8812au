@@ -360,6 +360,19 @@
 #define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED CONFIG_DBG_RX_SIGNAL_AP
 #endif
 
+#ifdef CONFIG_DBG_RA
+#define CONFIG_RA_DBG_CMD
+#define CONFIG_RA_FW_DBG_CODE
+#endif
+
+// per_rate_retrylimit_table is only defined for 20M/40M channels,
+//  i.e. probably not useful for VHT, seem to be used with multiple clients only.
+/* #define CONFIG_RA_DYNAMIC_RTY_LIMIT */
+
+// Enables dynamic rate adaptivity/adjustment (for rssi?) - ARFR? Default-on.
+// phydm_update_rate_id() (disabled with "dino will refine here later") seem to be for /proc info and logs only.
+/* #define CONFIG_RA_DYNAMIC_RATE_ID */
+
 #ifdef CONFIG_DBG_MISC
 #define DBG_IO
 #define DBG_DELAY_OS

@@ -270,6 +270,47 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
     This module version has similar tweak as ``rtw_tx_pwr_idx_override=`` module
     option, which sets specified power index for all rf paths and rates.
 
+  - ``ra`` - Rate Adaptivity/Adjustment info and tuning - how driver/firmware
+    adjusts rates, depending on errors and radio conditions.
+
+    - ``ra -h`` - help on arguments there.
+
+    - ``ra 1 ...`` - show (``ra 1 100``) or set PCR (?) offset (affects retries?),
+      e.g. ``ra 1 0 10`` for -10, ``ra 1 1 20`` for +20.
+
+      .. XXX: value range and what it means
+
+    - ``ra 2 ...`` - enable/disable fixed rate in fw for specific macid.
+
+      For example ``ra 2 1 0 2 63`` for enabling fixed rate for macid=0
+      (first/only peer, see various log msgs like rtw_alloc_macid for these),
+      bw=2 for 80M (calculated as 20<<2=80, 0=20M, 1=40M and so on),
+      rate=63 for VHTSS2MCS9 (see ``./phydm-cmd.py -x`` or hal_com.h).
+
+      See also ``dbg 31 1`` (ODM_COMP_API) for logging from
+      phydm_fw_fix_rate and such.
+
+    See also:
+
+    - RA/RA_MASK (01, 09) in ``dbg`` command for logging of RA-related stuff.
+
+    - Related build-time options - CONFIG_DBG_RA, CONFIG_RA_DBG_CMD,
+      CONFIG_RA_FW_DBG_CODE, CONFIG_RA_DYNAMIC_RTY_LIMIT,
+      CONFIG_RA_DYNAMIC_RATE_ID - in autoconf.h and phydm_rainfo.c.
+
+      CONFIG_RA_FW_DBG_CODE in particular to catch c2h (chip-to-host?) debug info
+      from fw and dump them if DBG_FW_TRACE is enabled (``dbg 22`` - FW_DEBUG_TRACE logging).
+
+    - ``fw_dbg`` command to enable firmware debug components via h2c, of which
+      RA (00) is probably the only one available on consumer chips (see ``fw_dbg
+      100`` for full list). ``fw_dbg 101`` disables all fw debug components.
+
+    - phydm_c2h_ra_report_handler and odm_c2h_ra_para_report_handler in
+      phydm_rainfo.c - relatively recent code ("2017.04.20 Dino, the 3rd PHYDM reform").
+
+    - odm_RA_debug for dumping dm_ra_table with CONFIG_RA_DBG_CMD,
+      apparently not used anywhere.
+
   - ... and there's much more of them, see ``-h`` output.
 
 
