@@ -1833,6 +1833,9 @@ odm_refresh_basic_rate_mask(
 	else
 		cur_stage = 2;					/* link  25% <= RSSI <= 30% */
 
+	PHYDM_DBG( p_dm, DBG_RA,
+		("refresh_basic_rate_mask stage=%d [%d] rssi-min=%d\n", cur_stage, stage, p_dm->rssi_min) );
+
 	if (cur_stage != stage) {
 		if (cur_stage == 1) {
 			FillOctetString(os_rate_set, rate_set, 5);

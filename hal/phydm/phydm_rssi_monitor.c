@@ -134,6 +134,8 @@ phydm_calculate_rssi_min_max(
 	p_dm->rssi_max = (u8)rssi_max_tmp;
 	p_dm->rssi_min = (u8)rssi_min_tmp;
 
+	PHYDM_DBG( p_dm, DBG_RSSI_MNTR,
+		("rssi-min=%d rssi-max=%d\n", p_dm->rssi_min, p_dm->rssi_max) );
 }
 #endif
 
