@@ -110,6 +110,18 @@ phydm_ra_debug(
 		PHYDM_SNPRINTF((output + used, out_len - used, "{1} {0:-,1:+} {ofst}: set offset\n"));
 		PHYDM_SNPRINTF((output + used, out_len - used, "{1} {100}: show offset\n"));
 		PHYDM_SNPRINTF((output + used, out_len - used, "{2} {en} {macid} {bw} {rate}: fw fix rate\n"));
+#if (defined(CONFIG_RA_DBG_CMD))
+		PHYDM_SNPRINTF((output + used, out_len - used, "{3} 100 {para_idx=1|2|3|8|9}: dump dm_ra_table values\n"));
+		PHYDM_SNPRINTF((output + used, out_len - used, "  1=RTY_PENALTY, 2=N_HIGH, 3=N_LOW,\n"));
+		PHYDM_SNPRINTF((output + used, out_len - used, "  8=RATE_UP_RTY_RATIO, 9=RATE_DOWN_RTY_RATIO\n"));
+		PHYDM_SNPRINTF((output + used, out_len - used, "{3} 101 {para_idx}: send ra_para_feedback_req h2c for same params\n"));
+		PHYDM_SNPRINTF((output + used, out_len - used, "{3} {para_idx} {rate_idx} {value}: change RA parameter for rate\n"));
+#endif
+
+#if (defined(CONFIG_RA_DBG_CMD))
+	} else if (var1[0] == 3) { /* Dump or tweak dm_ra_table via odm_RA_debug */
+		odm_RA_debug(p_dm_void, var1+1);
+#endif
 
 	} else if (var1[0] == 1) { /*Adjust PCR offset*/
 

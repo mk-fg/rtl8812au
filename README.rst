@@ -290,6 +290,9 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
       See also ``dbg 31 1`` (ODM_COMP_API) for logging from
       phydm_fw_fix_rate and such.
 
+    - ``ra 3 ...`` (only with CONFIG_RA_DBG_CMD) - dump or tweak per-rate
+      dm_ra_table parameters via odm_RA_debug.
+
     See also:
 
     - RA/RA_MASK (01, 09) in ``dbg`` command for logging of RA-related stuff.
@@ -307,9 +310,6 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
 
     - phydm_c2h_ra_report_handler and odm_c2h_ra_para_report_handler in
       phydm_rainfo.c - relatively recent code ("2017.04.20 Dino, the 3rd PHYDM reform").
-
-    - odm_RA_debug for dumping dm_ra_table with CONFIG_RA_DBG_CMD,
-      apparently not used anywhere.
 
   - ... and there's much more of them, see ``-h`` output.
 
