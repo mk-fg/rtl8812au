@@ -275,10 +275,11 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
 
     - ``ra -h`` - help on arguments there.
 
-    - ``ra 1 ...`` - show (``ra 1 100``) or set PCR (?) offset (affects retries?),
-      e.g. ``ra 1 0 10`` for -10, ``ra 1 1 20`` for +20.
+    - ``ra 1 ...`` - show (``ra 1 100``) or set PCR threshold offset (affects
+      retries?), e.g. ``ra 1 0 10`` for -10, ``ra 1 1 20`` for +20.
 
-      .. XXX: value range and what it means
+      | Range: -127 - +127, always 0 unless set manually.
+      | Sent in ODM_H2C_RSSI_REPORT to fw every ~2 seconds.
 
     - ``ra 2 ...`` - enable/disable fixed rate in fw for specific macid.
 
@@ -309,7 +310,8 @@ Some useful info nodes there (replace "wlan0" below with your interface name):
       100`` for full list). ``fw_dbg 101`` disables all fw debug components.
 
     - phydm_c2h_ra_report_handler and odm_c2h_ra_para_report_handler in
-      phydm_rainfo.c - relatively recent code ("2017.04.20 Dino, the 3rd PHYDM reform").
+      phydm_rainfo.c - relatively recent code ("2017.04.20 Dino, the 3rd PHYDM reform"),
+      though not sure if these ever trigger on end-user chips.
 
   - ... and there's much more of them, see ``-h`` output.
 
